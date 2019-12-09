@@ -11,6 +11,33 @@
 document.getElementById('confirm_title').innerText = "Confirm restart server";
 document.getElementById('confirm_msg').innerText = "Restart server?";
 
+function post_request(url, data, myfunc){
+	$.ajax({
+		url: url,
+		method: "POST",
+		data: data,
+		timeout: timeout_ajax
+	}).done(function( ret ) {
+		if(!ret.ok) {
+			if(ret.data){
+				alert(ret.data);
+				}
+			else {
+				var cpst = 'Redirect '+'to';
+				if(String(ret).indexOf(cpst) > -1){
+					alert('Need authentication!');
+					}
+				else {
+					alert('Server error, see console log for more.');
+					console.log(ret);
+					}
+			}
+		} else {myfunc(ret.data);}
+  }).fail(function( data ) {
+		alert('Ajax error!');
+	});
+}
+
 function func_reload(data){
 	location.reload(); 
 }
@@ -18,14 +45,14 @@ function func_reload(data){
 function change_descr(module, description) {
 	new_description = prompt("Change description?", description);
 	if (new_description != null){
-		adm_post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
+		post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
 	}
 }
 
 $("#btnconfirmok").click(function(){
 	$('.tooltip').hide();
 	$('#confirmdlg').modal('hide');
-	adm_post_request('/{{module_name}}/restart', {}, func_reload);
+	post_request('/{{module_name}}/restart', {}, func_reload);
 }); 
 
 
@@ -35,7 +62,7 @@ function addmodule(){
 		tmpl = document.getElementById('tmpl');
 		ix = tmpl.selectedIndex;
 		v = tmpl.item(ix).value;
-		adm_post_request('/{{module_name}}/addmod', {tmpl:v,newmodulename:newmodulename}, func_reload);
+		post_request('/{{module_name}}/addmod', {tmpl:v,newmodulename:newmodulename}, func_reload);
 	}
 }
 </script>
