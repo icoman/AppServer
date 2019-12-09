@@ -1,0 +1,91 @@
+{
+  "data": {
+    "10": {
+      "description": "Write here whatever you need to remember about this module",
+      "name": "admin notes",
+      "posturl": "",
+      "type": "textarea",
+      "value": "This is config of \"auth\" module.\r\n\r\nThere is no \"access module\" permission, all users and anonymous has access to login, logout and password reset and also to /auth/groups/all to be able to configure its own application.\r\n\r\nrw groups- list of groups who can change groups\r\nrw users - list of groups who can change users"
+    },
+    "20": {
+      "description": "Data Source Name",
+      "name": "DSN",
+      "posturl": "",
+      "type": "text",
+      "value": "sqlite+pysqlite:///auth.db"
+    },
+    "30": {
+      "description": "Minimum password length",
+      "name": "min pass len",
+      "posturl": "",
+      "type": "text",
+      "value": "3"
+    },
+    "40": {
+      "description": "for sending password by email",
+      "name": "smtp server",
+      "posturl": "",
+      "type": "text",
+      "value": "mail.example.com"
+    },
+    "50": {
+      "description": "for sending password by email",
+      "name": "msg from",
+      "posturl": "",
+      "type": "text",
+      "value": ""
+    },
+    "60": {
+      "description": "List of groups id who can edit groups",
+      "name": "rw groups",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": [
+        "1"
+      ]
+    },
+    "70": {
+      "description": "List of groups id who can edit users",
+      "name": "rw users",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": [
+        "1"
+      ]
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/post1",
+        "/post2",
+        "/post3"
+      ]
+    ]
+  }
+}

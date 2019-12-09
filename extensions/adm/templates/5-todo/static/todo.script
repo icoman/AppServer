@@ -1,0 +1,195 @@
+#display AJAX or json error with alert
+displayErrors = True
+
+#confirm add, delete, update
+Confirm = True
+
+import json
+from browser import document as doc, window, bind, ajax, alert, html, confirm
+
+pathname = window.location.pathname
+if pathname.endswith('/'):
+	pathname = pathname[:-1]
+module_name = pathname.split('/')[-1]
+
+
+#POST api urls
+urllist = '/{}/list'.format(module_name)
+urlupdate = '/{}/update'.format(module_name)
+urladd = '/{}/add'.format(module_name)
+urldelete = '/{}/delete'.format(module_name)
+
+def ajaxPOST(url, callback_func, data):
+	doc['body'].classList.add("wait")
+	req = ajax.ajax()
+	req.bind('complete',callback_func)
+	req.set_timeout(10, timeout_func)
+	req.open('POST',url,True)
+	req.set_header('content-type','application/x-www-form-urlencoded')
+	req.send(data)
+
+def timeout_func():
+	alert('AJAX Timeout')
+
+def on_complete_list(req):
+	doc['body'].classList.remove("wait")
+	if req.status==200 or req.status==0:
+		doc['table'].clear()
+		doc['info'].clear()
+		t = html.TABLE()
+		t.classList.add('table')
+		t.classList.add('table-bordered')
+		doc['table'] <= t
+		try:
+			D = json.loads(req.text)
+		except Exception as ex:
+			if req.text:
+				print(req.text)
+			else:
+				print('Json error:\n{}'.format(ex))
+			if displayErrors:
+				#Error/Exception from server side
+				if req.text:
+					alert('{}'.format(req.text))
+				else:
+					alert('Json error:\n{}'.format(ex))
+			return
+		if not D['ok']:
+			alert(D['data'])
+		else:
+			#enable buttons
+			doc['addbtn'].disabled = False
+			doc['filterbtn'].disabled = False
+			doc['refreshbtn'].disabled = False
+			L = D['data']
+			userid = D['userid']
+			doc['info'] <= html.DIV('Found {} records:'.format(len(L))) 
+			t <= html.TR(html.TH(x) for x in ('#','User full name','Date and time','Title','Description','Done',''))
+			for ix,i in enumerate(L):
+				row = html.TR()
+				row <= (html.TD(ix+1))
+				row <= (html.TD(i.get('userfullname')))
+				row <= (html.TD(i.get('dataora')))
+				row <= (html.TD(i.get('title')))
+				row <= (html.TD(i.get('description')))
+				row <= (html.TD(i.get('done') and 'yes' or 'no'))
+				_id_ = i.get('id')
+				if 0:
+					#Let all try to edit or delete
+					row <= html.TD(mk_button('Edit',_id_,'btn-success')+' '+mk_button('Delete',_id_,'btn-danger'))
+				else:
+					#Edit and delete only own records
+					if userid == i.get('userid'):
+						row <= html.TD(mk_button('Edit',_id_,'btn-success')+' '+mk_button('Delete',_id_,'btn-danger'),nowrap='')
+					else:
+						row <= html.TD('')
+				t <= row
+
+def on_complete_add_update_delete(req):
+	doc['body'].classList.remove("wait")
+	if req.status==200 or req.status==0:
+		try:
+			D = json.loads(req.text)
+		except Exception as ex:
+			if req.text:
+				print(req.text)
+			else:
+				print('Json error:\n{}'.format(ex))
+			if displayErrors:
+				#Error/Exception from server side
+				if req.text:
+					alert('{}'.format(req.text))
+				else:
+					alert('Json error:\n{}'.format(ex))
+			return
+		print('on_complete_add_update_delete:',D)
+		if D['ok']:
+			show()
+		else:
+			alert(D['data'])
+
+
+def btn_click(evt):
+	action = evt.target.text
+	# table row of the clicked button
+	row = evt.target.parent.parent
+	_id_ = evt.target._id_
+	cells = row.get(selector="TD")
+	if action == "Edit":
+		# Replace editable cells by INPUT fields
+		for cell in cells[3:-2]:
+			value = cell.text
+			cell.clear()
+			cell <= html.INPUT(value=value)
+		# Deal with checkbox
+		cell = cells[-2]
+		value = cell.text
+		cell.clear()
+		status=(value=='yes')
+		chbox = html.INPUT(Type="checkbox", value=value, checked=status)
+		cell <= chbox
+		chbox.bind('click', update_select)
+		# Replace buttons "Edit" and "Delete" by button "Update"
+		cells[-1].clear()
+		cells[-1] <= mk_button('Update',_id_,'btn-success') + ' ' + mk_button('Cancel',_id_,'btn-warning')
+	if action == "Add":
+		if not Confirm or confirm('Confirm add?'):
+			values = [entry.value for entry in row.select("INPUT")]
+			ajaxPOST(urladd, on_complete_add_update_delete, {'data': json.dumps(values)})
+	if action == "Update":
+		if not Confirm or confirm('Confirm update?'):
+			values = [entry.value for entry in row.select("INPUT")]
+			ajaxPOST(urlupdate, on_complete_add_update_delete, {'data': json.dumps(values), 'id':_id_})
+	if action == "Delete":
+		if not Confirm or confirm('Confirm delete?'):
+			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
+	if action == "Cancel":
+		show()
+
+def update_select(evt):
+	evt.target.value = evt.target.checked and 'yes' or 'no'
+
+def mk_button(label, _id_, cls='btn-default'):
+	btn = html.BUTTON(label)
+	btn.classList = 'btn '+cls
+	btn._id_ = _id_
+	btn.bind('click', btn_click)
+	return btn
+
+@bind(doc['addbtn'], 'click')
+def add_func(evt):
+	#evt.target.parent.parent
+	_id_ = 0
+	t = doc['table'].select("table")[0]
+	row = html.TR()
+	row <= (html.TD('0')) #
+	row <= (html.TD('user')) #user
+	row <= (html.TD('current date')) #datetime
+	_ = html.TD(''); _ <= html.INPUT(value='-new title-', style={'color':'#FF0000'}); row <= _
+	_ = html.TD(''); _ <= html.INPUT(value='-new descr-', style={'color':'#FF0000'}); row <= _
+	chbox = html.INPUT(Type="checkbox", value='no', checked=False)
+	chbox.bind('click', update_select)
+	row <= chbox
+	row <= html.TD(mk_button('Add',_id_,'btn-success') + ' ' + mk_button('Cancel',_id_,'btn-warning'),nowrap='')
+	t <= row
+
+@bind(doc['filterbtn'], 'click')
+def filter_func(evt):
+	filter = doc['filter'].value
+	ajaxPOST(urllist, on_complete_list, {'filter':filter})
+
+	
+@bind(doc['refreshbtn'], 'click')
+def show_all():
+	doc['filter'].value = ''
+	show()
+
+def show():
+	doc['addbtn'].disabled = True
+	doc['filterbtn'].disabled = True
+	doc['refreshbtn'].disabled = True
+	filter = doc['filter'].value
+	ajaxPOST(urllist, on_complete_list, {'filter':filter})
+
+show()
+

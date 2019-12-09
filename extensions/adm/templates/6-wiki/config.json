@@ -1,0 +1,87 @@
+{
+  "data": {
+    "10": {
+      "description": "Wiki Data Source Name",
+      "name": "DSN",
+      "posturl": "",
+      "type": "text",
+      "value": "sqlite+pysqlite:///wiki.db"
+    },
+    "20": {
+      "description": "List of groups who has acces to module",
+      "name": "access module",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": "[u'-1', u'0']"
+    },
+    "30": {
+      "description": "Check this to disable application",
+      "name": "module disabled",
+      "posturl": "",
+      "type": "checkbox",
+      "value": ""
+    },
+    "40": {
+      "description": "Show link to module config and user config",
+      "name": "config menu",
+      "posturl": "",
+      "type": "checkbox",
+      "value": ""
+    },
+    "50": {
+      "description": "Groups who can admin wiki",
+      "name": "admins access",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": "[u'3']"
+    },
+    "60": {
+      "description": "Groups who can publish wiki",
+      "name": "publishers access",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": "[u'3', u'4']"
+    },
+    "70": {
+      "description": "wiki upload folder",
+      "name": "upload folder",
+      "posturl": "",
+      "type": "text",
+      "value": "upload"
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/post1",
+        "/post2",
+        "/post3"
+      ]
+    ]
+  }
+}

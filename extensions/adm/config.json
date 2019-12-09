@@ -1,0 +1,61 @@
+{
+  "data": {
+    "10": {
+      "description": "Write here whatever you need to remember about this module",
+      "name": "admin notes",
+      "posturl": "",
+      "type": "textarea",
+      "value": "This is config of adm module.\r\n\r\naccess module - list of groups who has access to public functions (edit user config)\r\nadmin module - list of groups who has access to admin functions"
+    },
+    "20": {
+      "description": "List of groups id who has acces to module",
+      "name": "access module",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": [
+        "-1"
+      ]
+    },
+    "30": {
+      "description": "List of groups id who can admin modules",
+      "name": "admin module",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": [
+        "1"
+      ]
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/auth/groups/all"
+      ]
+    ]
+  }
+}

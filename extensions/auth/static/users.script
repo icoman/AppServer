@@ -1,0 +1,362 @@
+
+#for groups selection
+#useCheckboxes = False #use SELECT
+useCheckboxes = True
+
+import json, random
+from browser import document as doc, bind, ajax, html, window
+
+#POST api urls
+urllist = '/auth/users/list'
+urlupdate = '/auth/users/update'
+urladd = '/auth/users/add'
+urldelete = '/auth/users/delete'
+urlgetgroups = '/auth/groups/list'
+
+groups = {} #id:group_name
+callback_delete = None
+callback_add = None
+callback_update = None
+callback_token = None
+
+cntck = 1000
+
+def ajaxPOST(url, callback_func, data):
+	doc['msgloader'].text = 'Loading ... '
+	doc['divloader'].hidden = False
+	doc['userstable'].hidden = True
+	req = ajax.ajax()
+	req.bind('complete',callback_func)
+	req.set_timeout(10, timeout_func) #in seconds
+	req.open('POST',url,True)
+	req.set_header('content-type','application/x-www-form-urlencoded')
+	req.send(data)
+
+def timeout_func():
+	doc['msgloader'].text += ' AJAX Timeout!'
+
+def on_complete_list(req):
+	if req.status == 200 or req.status == 0:
+		userstable = doc['userstable']
+		userstable.clear()
+		thead = html.THEAD()
+		thead <= html.TR(html.TH(x) for x in ('#','QR code','Username','Fullname','Email','Password','Groups',''))
+		userstable <= thead
+		userstable <= html.TBODY()
+		t = userstable.tBodies[-1]
+		try:
+			D = json.loads(req.text)
+		except Exception as ex:
+			#Error/Exception from server side
+			if req.text:
+				doc['msgloader'].text += ' {}'.format(req.text)
+			else:
+				doc['msgloader'].text += ' Json error:\n{}'.format(ex)
+			return
+		if not D['ok']:
+			doc['msgloader'].text += ' {}'.format(D['data'])
+		else:
+			#show table
+			doc['divloader'].hidden = True
+			doc['userstable'].hidden = False
+			#enable buttons
+			doc['addbtn'].disabled = False
+			doc['filterbtn'].disabled = False
+			doc['refreshbtn'].disabled = False
+			L = D['data']
+			for ix,i in enumerate(L):
+				row = html.TR()
+				row <= (html.TD(ix+1))
+				btn = html.BUTTON('')
+				btn.classList = 'btn btn-xs btn-info'
+				btn.bind('click', btn_qrcode)
+				div = html.DIV(Class="glyphicon glyphicon-qrcode")
+				div.uname = i.get('name')
+				btn <= (div)
+				row <= (html.TD(btn))
+				row <= (html.TD(i.get('name')))
+				row <= (html.TD(i.get('fullname')))
+				row <= (html.TD(i.get('email')))
+				row <= (html.TD('***'))
+				row <= (html.TD(', '.join([groups[str(g)][0] for g in i.get('groups')])))
+				_id_ = i.get('id')
+				#Let all try to edit or delete
+				ed = mk_button('Edit',_id_,'btn-success','Edit "{}"'.format(i.get('name')))
+				ed.grlist = i.get('groups')
+				row <= html.TD(ed+' '+mk_button('Delete',_id_,'btn-danger', 'Delete "{}"'.format(i.get('name'))),nowrap='')
+				t <= row
+
+
+def on_complete_add_update_delete(req):
+	if req.status == 200 or req.status == 0:
+		try:
+			D = json.loads(req.text)
+			if not D['ok']:
+				#Error/Exception from server side
+				doc['msgloader'].text += ' {}'.format(D['data'])
+				return
+		except Exception as ex:
+			#Error/Exception from server side
+			if req.text:
+				doc['msgloader'].text += ' {}'.format(req.text)
+			else:
+				doc['msgloader'].text += 'Json error:\n{}'.format(ex)
+			return
+		show()
+
+def on_complete_getgroups(req):
+	global groups
+	groups = {}
+	if req.status == 200 or req.status == 0:
+		try:
+			D = json.loads(req.text)
+			if D['ok']:
+				groups = {str(x['id']):[x['name'], x['description']] for x in D['data']}
+				filter = doc['filter'].value
+				ajaxPOST(urllist, on_complete_list, {'filter':filter})
+			else:
+				doc['msgloader'].text += ' {}'.format(D['data'])
+		except Exception as ex:
+			#print(ex)
+			doc['msgloader'].text += ' {}'.format(ex)
+
+def btn_click(evt):
+	action = evt.target.text
+	# table row of the clicked button
+	row = evt.target.parent.parent
+	_id_ = evt.target._id_
+	cells = row.get(selector="TD")
+	if action == "Edit":
+		grlist=evt.target.grlist
+		# Replace editable cells by INPUT fields
+		for cell in cells[3:-2]:
+			value = cell.text
+			cell.clear()
+			cell <= html.INPUT(value=value)
+		#clear password field on edit
+		#if password is blank it will not be changed by server
+		cells[-3].clear()
+		#cells[-3] <= html.TD(html.INPUT(Type="Password",value=""))
+		cells[-3] <= html.TD(html.INPUT(value=""))
+		cells[-3].setAttribute("autocomplete", "off")
+		#select groups
+		cells[-2].clear()
+		if not useCheckboxes:
+			#SELECT
+			sel = html.SELECT(size=5, multiple=True)
+			for idgr in sorted(groups.keys()):
+				item = groups.get(idgr)[0]
+				isSelected = int(idgr) in grlist
+				title = groups.get(idgr)[1]
+				sel <= html.OPTION(item, selected=isSelected, title=title)
+			cells[-2] <= sel
+		else:
+			#CHECKBOX
+			span = None
+			for idgr in sorted(groups.keys()):
+				item = groups.get(idgr)[0]
+				isSelected = int(idgr) in grlist
+				if isSelected:
+					style={'color':'#FF0000'}
+				else:
+					style={'color':'#000000'}
+				title = groups.get(idgr)[1]
+				#unique name for label checkbox for each module and config key 
+				global cntck
+				idlabel = 'lck_{}'.format(cntck)
+				cntck += 1
+				if span is None:
+					span = html.SPAN()
+				else:
+					span <= ", "
+				lab = html.LABEL(item+" ", value=item, id=idlabel, title=title, style=style)
+				chbox = html.INPUT(Type="checkbox", value=item, checked=isSelected, title=title)
+				chbox.idlabel = idlabel
+				lab.bind('click', on_checkbox_change)
+				lab <= chbox
+				span <= lab
+			if span is None:
+				span = html.SPAN()
+			cells[-2] <= span
+		# Replace buttons "Edit" and "Delete" by button "Update" and "Cancel"
+		cells[-1].clear()
+		cells[-1] <= mk_button('Update ',_id_,'btn-success') + ' ' + mk_button('Cancel ',_id_,'btn-warning')
+	if action == "Add":
+		values = [entry.value for entry in row.select("INPUT")]
+		def _add():
+			if not useCheckboxes:
+				#SELECT
+				sel = row.get(selector="SELECT")[0]
+				values.append([option.value for option in sel if option.selected])
+			else:
+				#CHECKBOX
+				sel = row.get(selector='input[type="checkbox"]')
+				values.append([option.value for option in sel if option.checked])
+			ajaxPOST(urladd, on_complete_add_update_delete, {'data': json.dumps(values)})
+		global callback_add
+		callback_add = _add
+		message = 'Add username "{}" ?'.format(values[0])
+		window.show_dlg('Confirm add user', message)
+	if action == "Update":
+		values = [entry.value for entry in row.select("INPUT")]
+		def _update():
+			if not useCheckboxes:
+				#SELECT
+				sel = row.get(selector="SELECT")[0]
+				values.append([option.value for option in sel if option.selected])
+			else:
+				#CHECKBOX
+				sel = row.get(selector='input[type="checkbox"]')
+				values.append([option.value for option in sel if option.checked])
+			ajaxPOST(urlupdate, on_complete_add_update_delete, data={'data': json.dumps(values), 'id':_id_})
+		global callback_update
+		callback_update = _update
+		message = 'Update username "{}" ?'.format(cells[2].text)
+		window.show_dlg('Confirm update user', message)
+	if action == "Delete":
+		def _delete():
+			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
+		global callback_delete
+		callback_delete = _delete
+		message = 'Delete username "{}" ?'.format(cells[2].text)
+		window.show_dlg('Confirm delete user', message)
+	if action == "Cancel":
+		show()
+
+@bind(doc['btnconfirmok'], 'click')
+def on_btnconfirmok_click(evt):
+	window.hide_dlg()
+	global callback_delete
+	global callback_add
+	global callback_update
+	global callback_token
+	if callback_delete:
+		callback_delete()
+	if callback_add:
+		callback_add()
+	if callback_update:
+		callback_update()
+	if callback_token:
+		callback_token(True)
+	callback_delete = None
+	callback_add = None
+	callback_update = None
+	callback_token = None
+
+@bind(doc['btnconfirmcancel'], 'click')
+def on_btnconfirmcancel_click(evt):
+	window.hide_dlg()
+	global callback_delete
+	global callback_add
+	global callback_update
+	global callback_token
+	if callback_token:
+		callback_token(False)
+	callback_delete = None
+	callback_add = None
+	callback_update = None
+	callback_token = None
+
+def on_checkbox_change(evt):
+	try:
+		ob = doc[evt.target.idlabel]
+		if evt.target.checked:
+			ob.style={'color':'#FF0000'}
+		else:
+			ob.style={'color':'#000000'}
+	except:
+		pass
+
+def mk_button(label, _id_, cls='btn-default', title=''):
+	btn = html.BUTTON(label, title=title)
+	btn.classList = 'btn btn-xs '+cls
+	btn._id_ = _id_
+	btn.bind('click', btn_click)
+	return btn
+
+def getRndString(n):
+	ret = ''
+	area = 'abcdefghijklmnopqrstuvwxyz0123456789!@#'
+	for i in range(n):
+		ix = random.randint(0, len(area)-1)
+		ret = ret + area[ix]
+	return u''+ret
+
+@bind(doc['addbtn'], 'click')
+def add_func(evt):
+	_id_ = 0
+	t = doc['userstable'].tBodies[0]
+	row = html.TR()
+	row <= (html.TD('0')) #
+	row <= (html.TD(' ')) #qrcode
+	_ = html.TD(''); _ <= html.INPUT(value='- new user -', style={'color':'#FF0000'}); row <= _
+	_ = html.TD(''); _ <= html.INPUT(value='- new fullname -', style={'color':'#FF0000'}); row <= _
+	_ = html.TD(''); _ <= html.INPUT(value='', style={'color':'#FF0000'}); row <= _
+	_ = html.TD(''); _ <= html.INPUT(value=getRndString(10), style={'color':'#FF0000'}); row <= _
+	#select groups
+	if not useCheckboxes:
+		#SELECT
+		sel = html.SELECT(size=5, multiple=True)
+		for idgr in sorted(groups.keys()):
+			item = groups.get(idgr)[0]
+			title = groups.get(idgr)[1]
+			sel <= html.OPTION(item, selected=False, title=title)
+		row <= html.TD(sel)
+	else:
+		#CHECKBOX
+		span = None
+		for idgr in sorted(groups.keys()):
+			item = groups.get(idgr)[0]
+			isSelected = False
+			title = groups.get(idgr)[1]
+			if span is None:
+				span = html.SPAN()
+			else:
+				span <= ', '
+			global cntck
+			idlabel = 'lck_{}'.format(cntck)
+			cntck += 1
+			style={'color':'#000000'}
+			lab = html.LABEL(item+' ', value=item, id=idlabel, title=title, style=style)
+			chbox = html.INPUT(Type="checkbox", value=item, checked=isSelected, title=title)
+			chbox.idlabel = idlabel
+			lab.bind('click', on_checkbox_change)
+			lab <= chbox
+			span <= lab
+		if span is not None:
+			row <= html.TD(span)
+	row <= html.TD(mk_button('Add',_id_,'btn-success') + ' ' + mk_button('Cancel',_id_,'btn-warning'),nowrap='')
+	t <= row
+
+@bind(doc['filterbtn'], 'click')
+def filter_func(evt):
+	filter = doc['filter'].value
+	ajaxPOST(urllist, on_complete_list, {'filter':filter})
+
+@bind(doc['refreshbtn'], 'click')
+def show_all():
+	doc['filter'].value = ''
+	show()
+
+def show():
+	doc['addbtn'].disabled = True
+	doc['filterbtn'].disabled = True
+	doc['refreshbtn'].disabled = True
+	ajaxPOST(urlgetgroups, on_complete_getgroups, {})
+
+def btn_qrcode(evt):
+	user = evt.target.uname
+	pathArray = window.location.href.split( '/' )
+	protocol = pathArray[0]
+	host = pathArray[2]
+	url = protocol + '//' + host + '/auth/users/qrscan'
+	def _update_token(flag):
+		if flag:
+			window.open("qrcode?new=1&user={}&url={}".format(user,url),"", "width=600,height=500")
+		else:
+			window.open("qrcode?user={}&url={}".format(user,url),"", "width=600,height=500")
+	message = 'Generate a new token for "{}" ?'.format(user)
+	global callback_token
+	callback_token = _update_token
+	window.show_dlg('Confirm generate token', message)
+show()

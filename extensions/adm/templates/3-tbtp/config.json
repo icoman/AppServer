@@ -1,0 +1,81 @@
+{
+  "data": {
+    "10": {
+      "description": "Demo text parameter",
+      "name": "param 1",
+      "posturl": "",
+      "type": "text",
+      "value": "one"
+    },
+    "20": {
+      "description": "Demo text parameter",
+      "name": "param 2",
+      "posturl": "",
+      "type": "text",
+      "value": "two"
+    },
+    "30": {
+      "description": "enable or disable module execution",
+      "name": "module disabled",
+      "posturl": "",
+      "type": "checkbox",
+      "value": ""
+    },
+    "40": {
+      "description": "Show module config dialog",
+      "name": "config menu",
+      "posturl": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    "50": {
+      "description": "enable acces to user json config file",
+      "name": "user config",
+      "posturl": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    "60": {
+      "description": "List of groups who has acces to module",
+      "name": "access module",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": [
+        "-1",
+        "0"
+      ]
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/auth/groups/all"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "data": {
+    "10": {
+      "description": "Data Source Name",
+      "name": "DSN",
+      "posturl": "",
+      "type": "text",
+      "value": "sqlite+pysqlite:///todo.db"
+    },
+    "20": {
+      "description": "Check this to disable application",
+      "name": "module disabled",
+      "posturl": "",
+      "type": "checkbox",
+      "value": ""
+    },
+    "30": {
+      "description": "Show link to module config and user config",
+      "name": "config menu",
+      "posturl": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    "40": {
+      "description": "List of groups who has acces to module",
+      "name": "access module",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": "[u'-1']"
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/auth/groups/all"
+      ]
+    ]
+  }
+}

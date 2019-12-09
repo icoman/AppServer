@@ -1,0 +1,85 @@
+{
+  "data": {
+    "10": {
+      "description": "Demo text parameter",
+      "name": "test1",
+      "posturl": "",
+      "type": "text",
+      "value": "1"
+    },
+    "20": {
+      "description": "Demo text parameter",
+      "name": "test2",
+      "posturl": "",
+      "type": "text",
+      "value": "2"
+    },
+    "30": {
+      "description": "Demo text parameter",
+      "name": "test3",
+      "posturl": "",
+      "type": "text",
+      "value": "3"
+    },
+    "40": {
+      "description": "boolean field",
+      "name": "bool1",
+      "posturl": "",
+      "type": "checkbox",
+      "value": ""
+    },
+    "50": {
+      "description": "boolean field",
+      "name": "bool2",
+      "posturl": "",
+      "type": "checkbox",
+      "value": ""
+    },
+    "60": {
+      "description": "a list of groups id",
+      "name": "test access1",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": "[0]"
+    },
+    "70": {
+      "description": "a list of groups id",
+      "name": "test access2",
+      "posturl": "/auth/groups/all",
+      "type": "mc",
+      "value": "[-1,0]"
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/auth/groups/all"
+      ]
+    ]
+  }
+}

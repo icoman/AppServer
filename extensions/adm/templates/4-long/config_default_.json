@@ -1,0 +1,50 @@
+{
+  "data": {
+    "10": {
+      "description": "",
+      "name": "job title",
+      "posturl": "",
+      "type": "text",
+      "value": "My Job"
+    },
+    "20": {
+      "description": "",
+      "name": "steps",
+      "posturl": "",
+      "type": "text",
+      "value": "5"
+    }
+  },
+  "fields": {
+    "10": [
+      "name",
+      []
+    ],
+    "20": [
+      "description",
+      []
+    ],
+    "30": [
+      "type",
+      [
+        "text",
+        "textarea",
+        "password",
+        "checkbox",
+        "select",
+        "mc"
+      ]
+    ],
+    "40": [
+      "value",
+      []
+    ],
+    "50": [
+      "posturl",
+      [
+        "",
+        "/auth/groups/all"
+      ]
+    ]
+  }
+}
