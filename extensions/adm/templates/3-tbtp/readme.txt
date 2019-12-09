@@ -1,4 +1,4 @@
-Sample todo list
+Test bootstrap with templates
 
 Added as sample for web app server.
 

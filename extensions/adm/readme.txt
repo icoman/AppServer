@@ -1,6 +1,4 @@
-Sample todo list
-
-Added as sample for web app server.
+Admin module
 
 MIT License
 

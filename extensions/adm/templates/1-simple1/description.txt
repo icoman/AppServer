@@ -1,1 +1,1 @@
-simple template with no db ex1
+simple template with no db example 1

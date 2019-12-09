@@ -1,4 +1,4 @@
-Sample todo list
+simple template with no db example 2
 
 Added as sample for web app server.
 
