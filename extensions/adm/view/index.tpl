@@ -1,9 +1,16 @@
 % include('header.tpl')
 
 <!-- Admin module -->
-%include('adm_edcfg.tpl')
+% include('adm_edcfg.tpl')
+
+% include('confirm_dlg.tpl')
+
 
 <script>
+
+document.getElementById('confirm_title').innerText = "Confirm restart server";
+document.getElementById('confirm_msg').innerText = "Restart server?";
+
 function func_reload(data){
 	location.reload(); 
 }
@@ -15,11 +22,12 @@ function change_descr(module, description) {
 	}
 }
 
-function restart(){
-	if(confirm('Are you sure you want to restart webserver?')){
-		adm_post_request('/{{module_name}}/restart', {}, func_reload);
-	}
-}
+$("#btnconfirmok").click(function(){
+	$('.tooltip').hide();
+	$('#confirmdlg').modal('hide');
+	adm_post_request('/{{module_name}}/restart', {}, func_reload);
+}); 
+
 
 function addmodule(){
 	newmodulename = prompt("New module name?", 'new module');
@@ -45,7 +53,8 @@ function addmodule(){
 </form>
 
 <p align="right">
-<a href="#" onclick="restart();return false;" class="btn btn-danger btn" 
+<a href="#confirmdlg" class="btn btn-danger btn" 
+	data-toggle="modal"
 	data-toggle="tooltip" data-placement="auto bottom"
 	title="Shutdown, then restart the webserver"><span class="glyphicon glyphicon-repeat"></span> Restart Webserver</a>
 </p>
@@ -80,3 +89,5 @@ function addmodule(){
 </tbody>
 </table>
 
+
+% include('footer.tpl')
