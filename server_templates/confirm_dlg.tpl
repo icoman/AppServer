@@ -1,4 +1,4 @@
-<!-- confirm global dialog -->
+<!-- confirm dialog -->
 <div id="confirmdlg" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -8,7 +8,7 @@
       </div>
 	<div class="modal-body">
 	<div class="form-group">
-        <label id="confirm_msg" class="control-label">Message</label>
+        <label id="confirm_message" class="control-label">Message</label>
 	</div>
     <div class="modal-footer">
 		<button type="button" class="btn btn-success btn-sm" id="btnconfirmok"><span class="glyphicon glyphicon-ok"></span> Ok</button>
@@ -18,3 +18,14 @@
 	</div>
 </div>
 </div>
+
+<script>
+function show_confirm_dlg(title, message){
+	$('#confirm_title').text(title);
+	$('#confirm_message').text(message);
+	$('#confirmdlg').modal('show');
+}
+function hide_confirm_dlg(){
+	$('#confirmdlg').modal('hide');
+}
+</script>

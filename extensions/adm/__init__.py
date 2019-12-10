@@ -120,21 +120,25 @@ def _():
     """
         Add server modules.
     """
-    module_folder = app.module_folder
-    new_module_name = bottle.request.forms.newmodulename
-    tmpl_name = bottle.request.forms.tmpl
-    templates_folder = os.path.join(module_folder, 'templates')
-    extensions_folder = os.path.join(module_folder, '..')
-    custom_module_folder = os.path.join(extensions_folder, new_module_name)
-    src_template_folder = os.path.join(templates_folder, tmpl_name)
-    if os.path.isdir(custom_module_folder):
-        return dict(ok=False, data="Module already exists!")
-    dir_util.copy_tree(src_template_folder, custom_module_folder)
-    old_test_file = os.path.join(custom_module_folder, '_test_module.py')
-    new_test_file = os.path.join(custom_module_folder, 'test_module.py')
-    if os.path.isfile(old_test_file):
-        os.rename(old_test_file, new_test_file)
-    return dict(ok=True, data=None)
+    try:
+        module_folder = app.module_folder
+        new_module_name = bottle.request.forms.newmodulename
+        tmpl_name = bottle.request.forms.tmpl
+        templates_folder = os.path.join(module_folder, 'templates')
+        extensions_folder = os.path.join(module_folder, '..')
+        custom_module_folder = os.path.join(extensions_folder, new_module_name)
+        src_template_folder = os.path.join(templates_folder, tmpl_name)
+        if os.path.isdir(custom_module_folder):
+            return dict(ok=False, data="Module already exists!")
+        dir_util.copy_tree(src_template_folder, custom_module_folder)
+        old_test_file = os.path.join(custom_module_folder, '_test_module.py')
+        new_test_file = os.path.join(custom_module_folder, 'test_module.py')
+        if os.path.isfile(old_test_file):
+            os.rename(old_test_file, new_test_file)
+        ret = dict(ok=True, data=None)
+    except Exception as ex:
+        ret = dict(ok=False, data=str(ex))
+    return ret
 
 
 @app.post('/chdscr')
@@ -143,16 +147,20 @@ def _():
     """
         Change module description.
     """
-    module_name = bottle.request.forms.get('module')
-    module_description = bottle.request.forms.get('description')
-    if module_name:
-        server_folder = app.server_config['DATAFOLDER']
-        extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
-        custom_module_folder = os.path.join(extensions_folder, module_name)
-        filename = os.path.join(custom_module_folder, 'description.txt')
-        with open(filename, 'wt') as f:
-            f.write(module_description)
-    return dict(ok=True, data=None)
+    try:
+        module_name = bottle.request.forms.get('module')
+        module_description = bottle.request.forms.get('description')
+        if module_name:
+            server_folder = app.server_config['DATAFOLDER']
+            extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
+            custom_module_folder = os.path.join(extensions_folder, module_name)
+            filename = os.path.join(custom_module_folder, 'description.txt')
+            with open(filename, 'wt') as f:
+                f.write(module_description)
+        ret = dict(ok=True, data=None)
+    except Exception as ex:
+        ret = dict(ok=False, data=str(ex))
+    return ret
 
 
 @app.post('/savecfg')
@@ -224,44 +232,49 @@ def _():
         Load json config of user or of module
         as data source for generated edit form.
     """
-    bs = app.get_beaker_session()
-    module_name = bottle.request.forms.module
-    foruser = bottle.request.forms.foruser
-    if foruser:
-        username = bs.get('username')
-        configFile = 'config_{}.json'.format(username)
-    else:
-        configFile = 'config.json'
-        #
-        # json module config contains sensitive data (like SQL DSN)
-        # and is accesible ony to ADMIN = users in group id=1
-        #
-        if not app.check_user_in_groups(app.module_config.get('ADMIN')):
-            return dict(ok=False, data='Access denied.')
-    if module_name:
-        server_folder = app.server_config['DATAFOLDER']
-        extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
-        custom_module_folder = os.path.join(extensions_folder, module_name)
-        config_file = os.path.join(custom_module_folder, configFile)
-        if not os.path.exists(config_file):
-            src_config_file = os.path.join(custom_module_folder, 'config_default_.json')
-            if not os.path.exists(src_config_file):
-                return dict(ok=False, data='No default config file.')
-            copyfile(src_config_file, config_file)
+    try:
+        bs = app.get_beaker_session()
+        module_name = bottle.request.forms.module
+        foruser = bottle.request.forms.foruser
+        if foruser:
+            username = bs.get('username')
+            configFile = 'config_{}.json'.format(username)
+        else:
+            configFile = 'config.json'
+            #
+            # json module config contains sensitive data (like SQL DSN)
+            # and is accesible ony to ADMIN = users in group id=1
+            #
+            if not app.check_user_in_groups(app.module_config.get('ADMIN')):
+                return dict(ok=False, data='Access denied.')
+        if module_name:
+            server_folder = app.server_config['DATAFOLDER']
+            extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
+            custom_module_folder = os.path.join(extensions_folder, module_name)
             config_file = os.path.join(custom_module_folder, configFile)
-        with open(config_file) as f:
-            data = json.loads(f.read())
-        # some groups data format fix
-        for i in data.get('data').keys():
-            if data.get('data')[i]['type'] in ('mc',):
-                # mc = multiple checks = a list read by ajax post
-                try:
-                    _e = eval(str(data.get('data')[i]['value']) or "[]")
-                    if type(_e) is not type([]):
-                        _e = [_e]
-                    _v = [int(x) for x in _e]
-                except:
-                    _v = []
-                data.get('data')[i]['value'] = _v
-        return dict(ok=True, data=data)
-    return dict(ok=False, data='No module name')
+            if not os.path.exists(config_file):
+                src_config_file = os.path.join(custom_module_folder, 'config_default_.json')
+                if not os.path.exists(src_config_file):
+                    return dict(ok=False, data='No default config file.')
+                copyfile(src_config_file, config_file)
+                config_file = os.path.join(custom_module_folder, configFile)
+            with open(config_file) as f:
+                data = json.loads(f.read())
+            # some groups data format fix
+            for i in data.get('data').keys():
+                if data.get('data')[i]['type'] in ('mc',):
+                    # mc = multiple checks = a list read by ajax post
+                    try:
+                        _e = eval(str(data.get('data')[i]['value']) or "[]")
+                        if type(_e) is not type([]):
+                            _e = [_e]
+                        _v = [int(x) for x in _e]
+                    except:
+                        _v = []
+                    data.get('data')[i]['value'] = _v
+            ret = dict(ok=True, data=data)
+        else:
+            ret = dict(ok=False, data='No module name')
+    except Exception as ex:
+        ret = dict(ok=False, data=str(ex))
+    return ret

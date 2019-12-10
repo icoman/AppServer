@@ -196,7 +196,7 @@ def btn_click(evt):
 		global callback_add
 		callback_add = _add
 		message = 'Add username "{}" ?'.format(values[0])
-		window.show_dlg('Confirm add user', message)
+		window.show_confirm_dlg('Confirm', message)
 	if action == "Update":
 		values = [entry.value for entry in row.select("INPUT")]
 		def _update():
@@ -212,20 +212,20 @@ def btn_click(evt):
 		global callback_update
 		callback_update = _update
 		message = 'Update username "{}" ?'.format(cells[2].text)
-		window.show_dlg('Confirm update user', message)
+		window.show_confirm_dlg('Confirm', message)
 	if action == "Delete":
 		def _delete():
 			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
 		global callback_delete
 		callback_delete = _delete
 		message = 'Delete username "{}" ?'.format(cells[2].text)
-		window.show_dlg('Confirm delete user', message)
+		window.show_confirm_dlg('Confirm', message)
 	if action == "Cancel":
 		show()
 
 @bind(doc['btnconfirmok'], 'click')
 def on_btnconfirmok_click(evt):
-	window.hide_dlg()
+	window.hide_confirm_dlg()
 	global callback_delete
 	global callback_add
 	global callback_update
@@ -245,7 +245,7 @@ def on_btnconfirmok_click(evt):
 
 @bind(doc['btnconfirmcancel'], 'click')
 def on_btnconfirmcancel_click(evt):
-	window.hide_dlg()
+	window.hide_confirm_dlg()
 	global callback_delete
 	global callback_add
 	global callback_update
@@ -358,5 +358,5 @@ def btn_qrcode(evt):
 	message = 'Generate a new token for "{}" ?'.format(user)
 	global callback_token
 	callback_token = _update_token
-	window.show_dlg('Confirm generate token', message)
+	window.show_confirm_dlg('Confirm', message)
 show()

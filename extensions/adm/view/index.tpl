@@ -1,15 +1,25 @@
 % include('header.tpl')
 
 <!-- Admin module -->
+
 % include('adm_edcfg.tpl')
 
 % include('confirm_dlg.tpl')
 
+% include('input_dlg.tpl')
+
+% include('ok_dlg.tpl')
+
 
 <script>
 
-document.getElementById('confirm_title').innerText = "Confirm restart server";
-document.getElementById('confirm_msg').innerText = "Restart server?";
+$('#confirm_title').text('Confirm restart server');
+$('#confirm_msg').text('Restart server?');
+$("#btnconfirmok").click(function(){
+	$('.tooltip').hide();
+	$('#confirmdlg').modal('hide');
+	post_request('/{{module_name}}/restart', {}, func_reload);
+});
 
 function post_request(url, data, myfunc){
 	$.ajax({
@@ -20,21 +30,20 @@ function post_request(url, data, myfunc){
 	}).done(function( ret ) {
 		if(!ret.ok) {
 			if(ret.data){
-				alert(ret.data);
+				ok_dialog('Error',ret.data);
 				}
 			else {
 				var cpst = 'Redirect '+'to';
 				if(String(ret).indexOf(cpst) > -1){
-					alert('Need authentication!');
+					ok_dialog('Error','Need authentication!');
 					}
 				else {
-					alert('Server error, see console log for more.');
-					console.log(ret);
+					ok_dialog('Server error',ret);
 					}
 			}
 		} else {myfunc(ret.data);}
   }).fail(function( data ) {
-		alert('Ajax error!');
+		ok_dialog('Error','Ajax error!');
 	});
 }
 
@@ -43,27 +52,44 @@ function func_reload(data){
 }
 
 function change_descr(module, description) {
-	new_description = prompt("Change description?", description);
-	if (new_description != null){
-		post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
-	}
-}
-
-$("#btnconfirmok").click(function(){
+	//new_description = prompt("Change description?", description);
+	//if (new_description != null){
+	//	post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
+	//}
 	$('.tooltip').hide();
-	$('#confirmdlg').modal('hide');
-	post_request('/{{module_name}}/restart', {}, func_reload);
-}); 
-
-
-function addmodule(){
-	newmodulename = prompt("New module name?", 'new module');
-	if(newmodulename != null){
+	$('#input_title').text(`Change description for "${module}" ?`);
+	$('#input_name').text('Description');
+	$('#input_value').val(description);
+	$("#btninputok").click(function(){
+		$('.tooltip').hide();
+		$('#inputdlg').modal('hide');
+		new_description = $('#input_value').val();
 		tmpl = document.getElementById('tmpl');
 		ix = tmpl.selectedIndex;
 		v = tmpl.item(ix).value;
-		post_request('/{{module_name}}/addmod', {tmpl:v,newmodulename:newmodulename}, func_reload);
-	}
+		post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
+	}); 
+	$('#inputdlg').modal('show');
+}
+
+
+function addmodule(){
+	$('.tooltip').hide();
+	$('#input_title').text('New module name?');
+	$('#input_name').text('Name');
+	$('#input_value').val('new module');
+	$("#btninputok").click(function(){
+		$('.tooltip').hide();
+		$('#inputdlg').modal('hide');
+		new_module_name = $('#input_value').val();
+		if(new_module_name){
+			tmpl = document.getElementById('tmpl');
+			ix = tmpl.selectedIndex;
+			v = tmpl.item(ix).value;
+			post_request('/{{module_name}}/addmod', {tmpl:v,newmodulename:new_module_name}, func_reload);
+		}
+	}); 
+	$('#inputdlg').modal('show');
 }
 </script>
 

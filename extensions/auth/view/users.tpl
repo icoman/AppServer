@@ -21,16 +21,6 @@
 
 <script>
 $("input, password, select, textarea").attr("autocomplete", "off");
-
-function show_dlg(title, message){
-	document.getElementById('confirm_title').innerText = title;
-	document.getElementById('confirm_msg').innerText = message;
-	$('#confirmdlg').modal('show');
-}
-function hide_dlg(){
-	$('#confirmdlg').modal('hide');
-}
-
 </script>
 
 % include('footer.tpl')
