@@ -65,7 +65,7 @@ function change_descr(module, description) {
 
 function addmodule(){
 	$('.tooltip').hide();
-	$('#input_title').text('New module name?');
+	$('#input_title').text('Add new module?');
 	$('#input_name').text('Name');
 	$('#input_value').val('new module');
 	$("#btninputok").click(function(){
