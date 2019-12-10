@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 %if vars().get('errmsg'):
 <!-- Error:
 {{errmsg}}
@@ -118,9 +117,15 @@ http://bootstrap3-menu.codedorigin.com/
 %include('adm_edcfg.tpl')
 <p align="right" class="hidden-print">
 %if module_config.get('user config'):
-<a href="#" data-toggle="tooltip" data-placement="auto left" onclick="edit_user_config('{{module_name}}');return false;" class="btn btn-primary btn-xs" title="Edit user config"><span class="glyphicon glyphicon-user"></span><span class="glyphicon glyphicon-cog"></span></a>
+<button type="button" class="btn btn-primary btn-xs" 
+	onclick="edit_user_config('{{module_name}}')" data-toggle="tooltip" data-placement="auto top"
+	title="Edit user config" ><span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-user"></span>
+</button>
 %end
-<a href="#" data-toggle="tooltip" data-placement="auto bottom" onclick="edit_module_config('{{module_name}}');return false;" class="btn btn-danger btn-xs" title="Edit module config"><span class="glyphicon glyphicon-tasks"></span><span class="glyphicon glyphicon-cog"></span></a>
+<button type="button" class="btn btn-danger btn-xs" 
+	onclick="edit_module_config('{{module_name}}')" data-toggle="tooltip" data-placement="auto top"
+	title="Edit user config" ><span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-tasks"></span>
+</button>
 <a href="/adm" data-toggle="tooltip" data-placement="auto top" class="btn btn-warning btn-xs" title="Adm modules"><span class="glyphicon glyphicon-wrench"></span></a>
 </p>
 %end

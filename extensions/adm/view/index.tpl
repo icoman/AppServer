@@ -127,20 +127,25 @@ function reboot_server(){
 %for m in allmodules:
 <tr>
 <td>{{m[0]}}</td>
-<td><a href="#" onclick="edit_user_config('{{m[0]}}');return false;" 
-	data-toggle="tooltip" data-placement="auto top"
-	class="btn btn-primary btn-xs" 
-	title="Edit user config for module '{{m[0]}}'"><span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-user"></span></a>
-	<a href="#" onclick="edit_module_config('{{m[0]}}');return false;" 
-	data-toggle="tooltip" data-placement="bottom"
-	class="btn btn-danger btn-xs" 
-	title="Edit module config for module '{{m[0]}}'"><span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-tasks"></span></a>
+<td>
+	<button type="button" class="btn btn-primary btn-xs" 
+		onclick="edit_user_config('{{m[0]}}')"
+		data-toggle="tooltip" data-placement="auto top"
+		title="Edit user config for module '{{m[0]}}'" > 
+		<span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-user"></span></button>
+	<button type="button" class="btn btn-danger btn-xs" 
+		onclick="edit_module_config('{{m[0]}}')"
+		data-toggle="tooltip" data-placement="auto top"
+		title="Edit module config for module '{{m[0]}}'" > 
+		<span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-tasks"></span></button>
 </td>	
 <td><a href="/{{m[0]}}/">/{{m[0]}}/</a></td>
-<td><a href="#" onclick="change_descr('{{m[0]}}','{{m[1]}}');return false;"
-	data-toggle="tooltip" data-placement="auto left"
-	class="btn btn-success btn-xs" 
-	title="Change '{{m[0]}}' description"><span class="glyphicon glyphicon-pencil"></span></a>
+<td>
+	<button type="button" class="btn btn-success btn-xs" 
+		onclick="change_descr('{{m[0]}}','{{m[1]}}')"
+		data-toggle="tooltip" data-placement="auto left"
+		title="Change '{{m[0]}}' description" > 
+		<span class="glyphicon glyphicon-pencil"></span></button>
 {{m[1]}}</td> 
 </tr>
 %end
