@@ -6,20 +6,14 @@
 
 % include('confirm_dlg.tpl')
 
+<form class="md-form form-horizontal">
 % include('input_dlg.tpl')
+</form>
 
 % include('ok_dlg.tpl')
 
 
 <script>
-
-$('#confirm_title').text('Confirm restart server');
-$('#confirm_msg').text('Restart server?');
-$("#btnconfirmok").click(function(){
-	$('.tooltip').hide();
-	$('#confirmdlg').modal('hide');
-	post_request('/{{module_name}}/restart', {}, func_reload);
-});
 
 function post_request(url, data, myfunc){
 	$.ajax({
@@ -30,32 +24,36 @@ function post_request(url, data, myfunc){
 	}).done(function( ret ) {
 		if(!ret.ok) {
 			if(ret.data){
-				ok_dialog('Error',ret.data);
+				ok_dlg('Error',ret.data);
 				}
 			else {
 				var cpst = 'Redirect '+'to';
 				if(String(ret).indexOf(cpst) > -1){
-					ok_dialog('Error','Need authentication!');
+					ok_dlg('Error','Need authentication!');
 					}
 				else {
-					ok_dialog('Server error',ret);
+					ok_dlg('Server error',ret);
 					}
 			}
 		} else {myfunc(ret.data);}
   }).fail(function( data ) {
-		ok_dialog('Error','Ajax error!');
+		ok_dlg('Error','Ajax error!');
 	});
 }
+
+$('#confirm_title').text('Confirm');
+$('#confirm_msg').text('Restart server?');
+$("#btnconfirmok").click(function(){
+	$('.tooltip').hide();
+	$('#confirmdlg').modal('hide');
+	post_request('/{{module_name}}/restart', {}, func_reload);
+});
 
 function func_reload(data){
 	location.reload(); 
 }
 
 function change_descr(module, description) {
-	//new_description = prompt("Change description?", description);
-	//if (new_description != null){
-	//	post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
-	//}
 	$('.tooltip').hide();
 	$('#input_title').text(`Change description for "${module}" ?`);
 	$('#input_name').text('Description');
