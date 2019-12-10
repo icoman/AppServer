@@ -41,14 +41,6 @@ function post_request(url, data, myfunc){
 	});
 }
 
-$('#confirm_title').text('Confirm');
-$('#confirm_msg').text('Restart server?');
-$("#btnconfirmok").click(function(){
-	$('.tooltip').hide();
-	$('#confirmdlg').modal('hide');
-	post_request('/{{module_name}}/restart', {}, func_reload);
-});
-
 function func_reload(data){
 	location.reload(); 
 }
@@ -89,13 +81,28 @@ function addmodule(){
 	}); 
 	$('#inputdlg').modal('show');
 }
+
+
+
+$("#btnconfirmok").click(function(){
+	$('.tooltip').hide();
+	hide_confirm_dlg();
+	post_request('/{{module_name}}/restart', {}, func_reload);
+}); 
+function reboot_server(){
+	$('.tooltip').hide();
+	show_confirm_dlg('Confirm', 'Restart server?');
+}
+
 </script>
 
 
 <form class="form-inline">
-<input type="button" value="Add" class="btn btn-success" 
+<button type="button" class="btn btn-success" 
 	data-toggle="tooltip" data-placement="auto bottom"
-	onclick="addmodule()" title="Add module" />
+	onclick="addmodule()" title="Add module">
+	<span class="glyphicon glyphicon-plus"></span>
+	Add</button>
 <select class="form-control" id="tmpl">
 %for i in alltemplates:
 <option value="{{i[0]}}">{{i[1]}}</option>
@@ -104,10 +111,10 @@ function addmodule(){
 </form>
 
 <p align="right">
-<a href="#confirmdlg" class="btn btn-danger btn" 
-	data-toggle="modal"
+<button type="button" class="btn btn-danger" 
 	data-toggle="tooltip" data-placement="auto bottom"
-	title="Shutdown, then restart the webserver"><span class="glyphicon glyphicon-repeat"></span> Restart Webserver</a>
+	title="Shutdown, then restart the webserver"
+	onclick="reboot_server()"><span class="glyphicon glyphicon-repeat"></span> Restart Web Server</button>
 </p>
 
 <p>Python version: {{pyver}}</p>
