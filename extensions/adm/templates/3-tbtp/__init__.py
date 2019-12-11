@@ -46,5 +46,5 @@ def _():
     """
         Default view
     """
-    title = 'Index page'
+    title = 'Test Bootstrap with Templates'
     return dict(title=title)

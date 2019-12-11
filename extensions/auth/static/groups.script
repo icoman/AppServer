@@ -11,10 +11,6 @@ urlupdate = '/auth/groups/update'
 urladd = '/auth/groups/add'
 urldelete = '/auth/groups/delete'
 
-callback_delete = None
-callback_add = None
-callback_update = None
-
 def ajaxPOST(url, callback_func, data):
 	doc['msgloader'].text = 'Loading ... '
 	doc['divloader'].hidden = False
@@ -103,54 +99,29 @@ def btn_click(evt):
 	if action == "Add":
 		values = [entry.value for entry in row.select("INPUT")]
 		def _add():
+			window.hide_confirm_dlg()
 			ajaxPOST(urladd, on_complete_add_update_delete, {'data': json.dumps(values)})
-		global callback_add
-		callback_add = _add
+		doc['btnconfirmok'].bind('click', _add)
 		message = 'Add group "{}" ?'.format(values[0])
 		window.show_confirm_dlg('Confirm', message)
 	if action == "Update":
 		values = [entry.value for entry in row.select("INPUT")]
 		def _update():
+			window.hide_confirm_dlg()
 			ajaxPOST(urlupdate, on_complete_add_update_delete, {'data': json.dumps(values), 'id':_id_})
-		global callback_update
-		callback_update = _update
+		doc['btnconfirmok'].bind('click', _update)
 		message = 'Update group "{}" ?'.format(values[0])
 		window.show_confirm_dlg('Confirm', message)
 	if action == "Delete":
 		def _delete():
+			window.hide_confirm_dlg()
 			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
-		global callback_delete
-		callback_delete = _delete
+		doc['btnconfirmok'].bind('click', _delete)
 		message = 'Delete group "{}" ?'.format(cells[1].text)
 		window.show_confirm_dlg('Confirm', message)
 	if action == "Cancel":
 		show()
 
-@bind(doc['btnconfirmok'], 'click')
-def on_btnconfirmok_click(evt):
-	window.hide_confirm_dlg()
-	global callback_delete
-	global callback_add
-	global callback_update
-	if callback_delete:
-		callback_delete()
-	if callback_add:
-		callback_add()
-	if callback_update:
-		callback_update()
-	callback_delete = None
-	callback_add = None
-	callback_update = None
-
-@bind(doc['btnconfirmcancel'], 'click')
-def on_btnconfirmcancel_click(evt):
-	window.hide_confirm_dlg()
-	global callback_delete
-	global callback_add
-	global callback_update
-	callback_delete = None
-	callback_add = None
-	callback_update = None
 
 def update_select(evt):
 	evt.target.value = evt.target.checked and 'yes' or 'no'

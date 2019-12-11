@@ -14,10 +14,6 @@ urldelete = '/auth/users/delete'
 urlgetgroups = '/auth/groups/list'
 
 groups = {} #id:group_name
-callback_delete = None
-callback_add = None
-callback_update = None
-callback_token = None
 
 cntck = 1000
 
@@ -192,9 +188,9 @@ def btn_click(evt):
 				#CHECKBOX
 				sel = row.get(selector='input[type="checkbox"]')
 				values.append([option.value for option in sel if option.checked])
+			window.hide_confirm_dlg()
 			ajaxPOST(urladd, on_complete_add_update_delete, {'data': json.dumps(values)})
-		global callback_add
-		callback_add = _add
+		doc['btnconfirmok'].bind('click', _add)
 		message = 'Add username "{}" ?'.format(values[0])
 		window.show_confirm_dlg('Confirm', message)
 	if action == "Update":
@@ -208,54 +204,20 @@ def btn_click(evt):
 				#CHECKBOX
 				sel = row.get(selector='input[type="checkbox"]')
 				values.append([option.value for option in sel if option.checked])
+			window.hide_confirm_dlg()
 			ajaxPOST(urlupdate, on_complete_add_update_delete, data={'data': json.dumps(values), 'id':_id_})
-		global callback_update
-		callback_update = _update
+		doc['btnconfirmok'].bind('click', _update)
 		message = 'Update username "{}" ?'.format(cells[2].text)
 		window.show_confirm_dlg('Confirm', message)
 	if action == "Delete":
 		def _delete():
+			window.hide_confirm_dlg()
 			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
-		global callback_delete
-		callback_delete = _delete
+		doc['btnconfirmok'].bind('click', _delete)
 		message = 'Delete username "{}" ?'.format(cells[2].text)
 		window.show_confirm_dlg('Confirm', message)
 	if action == "Cancel":
 		show()
-
-@bind(doc['btnconfirmok'], 'click')
-def on_btnconfirmok_click(evt):
-	window.hide_confirm_dlg()
-	global callback_delete
-	global callback_add
-	global callback_update
-	global callback_token
-	if callback_delete:
-		callback_delete()
-	if callback_add:
-		callback_add()
-	if callback_update:
-		callback_update()
-	if callback_token:
-		callback_token(True)
-	callback_delete = None
-	callback_add = None
-	callback_update = None
-	callback_token = None
-
-@bind(doc['btnconfirmcancel'], 'click')
-def on_btnconfirmcancel_click(evt):
-	window.hide_confirm_dlg()
-	global callback_delete
-	global callback_add
-	global callback_update
-	global callback_token
-	if callback_token:
-		callback_token(False)
-	callback_delete = None
-	callback_add = None
-	callback_update = None
-	callback_token = None
 
 def on_checkbox_change(evt):
 	try:
@@ -350,13 +312,15 @@ def btn_qrcode(evt):
 	protocol = pathArray[0]
 	host = pathArray[2]
 	url = protocol + '//' + host + '/auth/users/qrscan'
-	def _update_token(flag):
-		if flag:
-			window.open("qrcode?new=1&user={}&url={}".format(user,url),"", "width=600,height=500")
-		else:
-			window.open("qrcode?user={}&url={}".format(user,url),"", "width=600,height=500")
+	def _update_and_show_token():
+		window.hide_confirm_dlg()
+		window.open("qrcode?new=1&user={}&url={}".format(user,url),"", "width=600,height=500")
+	def _show_token():
+		window.hide_confirm_dlg()
+		window.open("qrcode?user={}&url={}".format(user,url),"", "width=600,height=500")
 	message = 'Generate a new token for "{}" ?'.format(user)
-	global callback_token
-	callback_token = _update_token
+	doc['btnconfirmok'].bind('click', _update_and_show_token)
+	doc['btnconfirmcancel'].bind('click', _show_token)
 	window.show_confirm_dlg('Confirm', message)
+
 show()
