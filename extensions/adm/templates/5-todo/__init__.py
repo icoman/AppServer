@@ -94,71 +94,84 @@ def _():
                      'description': i.description,
                      'done': i.done}
                 L.append(d)
-            return dict(ok=True, data=L, userid=userid)
+            ret = dict(ok=True, data=L, userid=userid)
     except Exception as ex:
-        return dict(ok=False, data=str(ex))
+        ret = dict(ok=False, data=str(ex))
+    return ret
 
 
 @app.post('/add')
 @app.auth('access module')
 def _():
-    with MyS() as session:
-        bs = app.get_beaker_session()
-        userfullname = bs.get('userfullname', u'Anonymous')
-        userid = bs.get('userid', 0)
-        ob = Todo()
-        ob.userid = userid
-        ob.userfullname = userfullname
-        data = json.loads(bottle.request.forms.data)
-        ob.dataora = datetime.datetime.now()
-        ob.title = data[0]
-        ob.description = data[1]
-        ob.done = (data[2] == 'yes')
-        session.add(ob)
-        session.commit()  # ob.id is available after commit
-        obid = ob.id
-        return dict(ok=True, data=obid)
+    try:
+        with MyS() as session:
+            bs = app.get_beaker_session()
+            userfullname = bs.get('userfullname', u'Anonymous')
+            userid = bs.get('userid', 0)
+            ob = Todo()
+            ob.userid = userid
+            ob.userfullname = userfullname
+            data = json.loads(bottle.request.forms.data)
+            ob.dataora = datetime.datetime.now()
+            ob.title = data[0]
+            ob.description = data[1]
+            ob.done = (data[2] == 'yes')
+            session.add(ob)
+            session.commit()  # ob.id is available after commit
+            obid = ob.id
+            ret = dict(ok=True, data=obid)
+    except Exception as ex:
+        ret = dict(ok=False, data=str(ex))
+    return ret
 
 
 @app.post('/delete')
 @app.auth('access module')
 def _():
-    with MyS() as session:
-        bs = app.get_beaker_session()
-        userid = bs.get('userid', 0)
-        todo_id = int(bottle.request.forms.get('id', 0))
-        ob = session.query(Todo).filter(Todo.id == todo_id).first()
-        if ob:
-            obid = ob.id
-            if userid == ob.userid:
-                session.delete(ob)
+    try:
+        with MyS() as session:
+            bs = app.get_beaker_session()
+            userid = bs.get('userid', 0)
+            todo_id = int(bottle.request.forms.get('id', 0))
+            ob = session.query(Todo).filter(Todo.id == todo_id).first()
+            if ob:
+                obid = ob.id
+                if userid == ob.userid:
+                    session.delete(ob)
+                else:
+                    return dict(ok=False, data='Access denied.')
             else:
-                return dict(ok=False, data='Access denied.')
-        else:
-            obid = 0
-        return dict(ok=True, data=obid)
+                obid = 0
+            ret = dict(ok=True, data=obid)
+    except Exception as ex:
+        ret = dict(ok=False, data=str(ex))
+    return ret
 
 
 @app.post('/update')
 @app.auth('access module')
 def _():
-    with MyS() as session:
-        bs = app.get_beaker_session()
-        userfullname = bs.get('userfullname', u'Anonymous')
-        userid = bs.get('userid', 0)
-        todo_id = int(bottle.request.forms.get('id', 0))
-        data = json.loads(bottle.request.forms.data)
-        ob = session.query(Todo).filter(Todo.id == todo_id).first()
-        if ob:
-            obid = ob.id
-            if userid == ob.userid:
-                ob.userfullname = userfullname
-                ob.dataora = datetime.datetime.now()
-                ob.title = data[0]
-                ob.description = data[1]
-                ob.done = (data[2] == 'yes')
+    try:
+        with MyS() as session:
+            bs = app.get_beaker_session()
+            userfullname = bs.get('userfullname', u'Anonymous')
+            userid = bs.get('userid', 0)
+            todo_id = int(bottle.request.forms.get('id', 0))
+            data = json.loads(bottle.request.forms.data)
+            ob = session.query(Todo).filter(Todo.id == todo_id).first()
+            if ob:
+                obid = ob.id
+                if userid == ob.userid:
+                    ob.userfullname = userfullname
+                    ob.dataora = datetime.datetime.now()
+                    ob.title = data[0]
+                    ob.description = data[1]
+                    ob.done = (data[2] == 'yes')
+                else:
+                    return dict(ok=False, data='Access denied.')
             else:
-                return dict(ok=False, data='Access denied.')
-        else:
-            obid = 0
-        return dict(ok=True, data=obid)
+                obid = 0
+            ret = dict(ok=True, data=obid)
+    except Exception as ex:
+        ret = dict(ok=False, data=str(ex))
+    return ret

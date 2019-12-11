@@ -20,6 +20,7 @@ You must login to edit this page.
 <textarea id="wikiedit" rows="10" class="form-control">{{body}}</textarea>
 %end
 
+% include('ok_dlg.tpl')
 
 <script type="text/python">
 
@@ -27,7 +28,7 @@ You must login to edit this page.
 #useCheckboxes = False #use SELECT
 useCheckboxes = True
 
-from browser import document as doc, bind, ajax, alert, html, window
+from browser import document as doc, bind, ajax, html, window
 import json
 
 saveurl = "/{{module_name}}/edit{{wikipath}}"
@@ -43,30 +44,36 @@ def ajaxPOST(url, callback_func, data):
 	doc['body'].classList.add("wait")
 	req = ajax.ajax()
 	req.bind('complete',callback_func)
+	req.set_timeout(3, timeout_func)
 	req.open('POST',url,True)
 	req.set_header('content-type','application/x-www-form-urlencoded')
 	req.send(data)
+
+def timeout_func():
+	window.ok_dlg('Error', 'AJAX Timeout!')
 
 def on_complete_save(req):
 	doc['body'].classList.remove("wait")
 	if req.status==200 or req.status==0:
 		try:
 			D = json.loads(req.text)
-		except:
-			alert('Json error:\n'+req.text)
+		except Exception as ex:
+			window.ok_dlg('Error', str(ex))
 			return
 		if D['ok']:
 			#update version id if success
 			global edited_version_id, version_index
 			edited_version_id = D['data']
 			version_index = 0 #last version
-			alert('Page saved!\n\nVersion id: {}'.format(edited_version_id))
-			window.location.href='/{{module_name}}{{wikipath}}'
+			def _ok():
+				window.location.href='/{{module_name}}{{wikipath}}'
+			doc['btndlgok'].unbind()
+			doc['btndlgok'].bind('click', _ok)
+			window.ok_dlg('Page saved!','Version id: {}'.format(edited_version_id))
 		else:
-			alert(data)
-		#cancel_func(None)
+			window.ok_dlg('Error', D['data'])
 	else:
-		alert(req.text)
+		window.ok_dlg('Server Error', req.text)
 
 def on_complete_getgroups(req):
 	doc['body'].classList.remove("wait")
@@ -150,7 +157,7 @@ def showPageGroups():
 			chbox = html.INPUT(Type="checkbox", value=idgr, checked=isSelected, title=title)
 			#chbox.bind('click', on_checkbox_change)
 			chbox.idlabel = idlabel
-			lab = html.LABEL(item, value=item, title=title, id=idlabel, style=style)
+			lab = html.LABEL(item+" ", value=item, title=title, id=idlabel, style=style)
 			lab.bind('click', on_checkbox_change)
 			if control is None:
 				control = html.SPAN()

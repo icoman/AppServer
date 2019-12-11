@@ -11,7 +11,7 @@
         <label id="ok_msg" class="control-label">Message</label>
 	</div>
     <div class="modal-footer">
-		<button type="button" class="btn btn-success btn-sm" data-dismiss="modal"><span class="glyphicon glyphicon-ok"></span> Ok</button>
+		<button type="button" class="btn btn-success btn-sm" id="btndlgok" data-dismiss="modal"><span class="glyphicon glyphicon-ok"></span> Ok</button>
     </div>
 	</div>
 	</div>

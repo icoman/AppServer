@@ -20,13 +20,15 @@ You can't create this page.
 <textarea id="wikiedit" rows="10" class="form-control">{{body}}</textarea>
 %end
 
+% include('ok_dlg.tpl')
+
 <script type="text/python">
 
 #for groups selection
 #useCheckboxes = False #use SELECT
 useCheckboxes = True
 
-from browser import document as doc, bind, ajax, alert, html, window
+from browser import document as doc, bind, ajax, html, window
 import json
 
 saveurl = "/{{module_name}}/create{{wikipath}}"
@@ -49,13 +51,16 @@ def on_complete_save(req):
 		try:
 			D = json.loads(req.text)
 			pageid, versionid = D['data']
-			alert('Page created!\n\nPage id: {}\nVersion id:{}'.format(pageid, versionid))
-		except:
-			alert('Json error:\n'+req.text)
+			def _ok():
+				window.location.href='/{{module_name}}{{wikipath}}'
+			doc['btndlgok'].unbind()
+			doc['btndlgok'].bind('click', _ok)
+			window.ok_dlg('Page created!','Page id: {}, Version id: {}'.format(pageid, versionid))
+		except Exception as ex:
+			window.ok_dlg('Error', str(ex))
 			return
-		window.location.href='/{{module_name}}{{wikipath}}'
 	else:
-		alert(req.text)
+		window.ok_dlg('Server Error', req.text)
 
 def on_complete_getgroups(req):
 	doc['body'].classList.remove("wait")
@@ -134,7 +139,7 @@ def showPageGroups():
 			chbox = html.INPUT(Type="checkbox", value=idgr, checked=isSelected, title=title)
 			chbox.bind('click', on_checkbox_change)
 			chbox.idlabel = idlabel
-			lab = html.LABEL(item, value=item, title=title, id=idlabel, style=style)
+			lab = html.LABEL(item+" ", value=item, title=title, id=idlabel, style=style)
 			if control is None:
 				control = html.SPAN()
 			else:

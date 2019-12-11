@@ -190,6 +190,7 @@ def btn_click(evt):
 				values.append([option.value for option in sel if option.checked])
 			window.hide_confirm_dlg()
 			ajaxPOST(urladd, on_complete_add_update_delete, {'data': json.dumps(values)})
+		doc['btnconfirmok'].unbind()
 		doc['btnconfirmok'].bind('click', _add)
 		message = 'Add username "{}" ?'.format(values[0])
 		window.show_confirm_dlg('Confirm', message)
@@ -206,6 +207,7 @@ def btn_click(evt):
 				values.append([option.value for option in sel if option.checked])
 			window.hide_confirm_dlg()
 			ajaxPOST(urlupdate, on_complete_add_update_delete, data={'data': json.dumps(values), 'id':_id_})
+		doc['btnconfirmok'].unbind()
 		doc['btnconfirmok'].bind('click', _update)
 		message = 'Update username "{}" ?'.format(cells[2].text)
 		window.show_confirm_dlg('Confirm', message)
@@ -213,6 +215,7 @@ def btn_click(evt):
 		def _delete():
 			window.hide_confirm_dlg()
 			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
+		doc['btnconfirmok'].unbind()
 		doc['btnconfirmok'].bind('click', _delete)
 		message = 'Delete username "{}" ?'.format(cells[2].text)
 		window.show_confirm_dlg('Confirm', message)
@@ -319,7 +322,9 @@ def btn_qrcode(evt):
 		window.hide_confirm_dlg()
 		window.open("qrcode?user={}&url={}".format(user,url),"", "width=600,height=500")
 	message = 'Generate a new token for "{}" ?'.format(user)
+	doc['btnconfirmok'].unbind()
 	doc['btnconfirmok'].bind('click', _update_and_show_token)
+	doc['btnconfirmcancel'].unbind()
 	doc['btnconfirmcancel'].bind('click', _show_token)
 	window.show_confirm_dlg('Confirm', message)
 

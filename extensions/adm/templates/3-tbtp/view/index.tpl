@@ -65,14 +65,6 @@
 
 <script type="text/javascript">
 
-//prevent form submit when Enter key is pressed
-$(document).keypress(
-  function(event){
-    if (event.which == '13') {
-      event.preventDefault();
-    }
-});
-
 $("#button1").off().click(function(){
 	ok_dlg('JavaScript','Hello from JavaScript');
 });
@@ -137,7 +129,9 @@ def _(evt):
 	def _cancel_func():
 		window.hide_confirm_dlg()
 		window.ok_dlg('Cancel','Cancel from Brython')
+	document['btnconfirmok'].unbind()
 	document['btnconfirmok'].bind('click', _ok_func)
+	document['btnconfirmcancel'].unbind()
 	document['btnconfirmcancel'].bind('click', _cancel_func)
 	window.show_confirm_dlg('Confirm', 'Confirm from Brython')
 
@@ -148,6 +142,7 @@ def _(evt):
 		your_name = document['input_value'].value
 		message = 'Hello, {}!'.format(your_name)
 		window.ok_dlg('Input from Brython', message)
+	document['btninputok'].unbind()
 	document['btninputok'].bind('click', _ok_func)
 	window.show_input_dlg('Input from Brython', 'Name', 'your name')
 
@@ -174,8 +169,11 @@ def _(evt):
 		v3 = document['custom_input_value3'].value
 		message = 'Hello: v1={}, v2={}, v3={}'.format(v1, v2, v3)
 		window.ok_dlg('Custom Help from Brython', message)
+	document['btncustomok'].unbind()
 	document['btncustomok'].bind('click', _ok_func)
+	document['btncustomcancel'].unbind()
 	document['btncustomcancel'].bind('click', _cancel_func)
+	document['btncustomhelp'].unbind()
 	document['btncustomhelp'].bind('click', _help_func)
 	window.show_custom_dlg('Custom dlg from Brython', 'v1', '1', 'v2', '2', 'v3', '3');
 

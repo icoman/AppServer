@@ -101,6 +101,7 @@ def btn_click(evt):
 		def _add():
 			window.hide_confirm_dlg()
 			ajaxPOST(urladd, on_complete_add_update_delete, {'data': json.dumps(values)})
+		doc['btnconfirmok'].unbind()
 		doc['btnconfirmok'].bind('click', _add)
 		message = 'Add group "{}" ?'.format(values[0])
 		window.show_confirm_dlg('Confirm', message)
@@ -109,6 +110,7 @@ def btn_click(evt):
 		def _update():
 			window.hide_confirm_dlg()
 			ajaxPOST(urlupdate, on_complete_add_update_delete, {'data': json.dumps(values), 'id':_id_})
+		doc['btnconfirmok'].unbind()
 		doc['btnconfirmok'].bind('click', _update)
 		message = 'Update group "{}" ?'.format(values[0])
 		window.show_confirm_dlg('Confirm', message)
@@ -116,6 +118,7 @@ def btn_click(evt):
 		def _delete():
 			window.hide_confirm_dlg()
 			ajaxPOST(urldelete, on_complete_add_update_delete, {'id':_id_})
+		doc['btnconfirmok'].unbind()
 		doc['btnconfirmok'].bind('click', _delete)
 		message = 'Delete group "{}" ?'.format(cells[1].text)
 		window.show_confirm_dlg('Confirm', message)

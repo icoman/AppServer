@@ -113,26 +113,38 @@
 </div>
 
 
+% include('confirm_dlg.tpl')
 
-
+<form class="md-form form-horizontal">
+% include('input_dlg.tpl')
+</form>
 
 
 <script type="text/python">
-from browser import document as doc, bind, window, prompt, alert, confirm
+from browser import document as doc, bind, window, prompt
 
 
 
 def delete_version_func(evt):
 	verid = int(evt.target.attrs['verid'])
 	title = evt.target.attrs['title']
-	if confirm('Delete version {}?'.format({{len(all_page_versions)}}-verid)):
+	def _ok():
 		window.location.href='/{{module_name}}/deletever{{wikipath}}?v={}'.format(verid)
+	doc['btnconfirmok'].unbind()
+	doc['btnconfirmok'].bind('click', _ok)
+	message = 'Delete version {}?'.format({{len(all_page_versions)}}-verid)
+	window.show_confirm_dlg('Confirm', message)
+
 
 def edit_version_func(evt):
 	verid = int(evt.target.attrs['verid'])
 	title = evt.target.attrs['title']
-	if confirm('Edit version {}?'.format({{len(all_page_versions)}}-verid)):
+	def _ok():
 		window.location.href='/{{module_name}}/edit{{wikipath}}?v={}'.format(verid)
+	doc['btnconfirmok'].unbind()
+	doc['btnconfirmok'].bind('click', _ok)
+	message = 'Edit version {}?'.format({{len(all_page_versions)}}-verid)
+	window.show_confirm_dlg('Confirm', message)
 
 
 %if is_wiki_admin and version_index:
@@ -148,10 +160,21 @@ def edit_func(evt):
 
 @bind(doc['deletebtn'], 'click')
 def delete_func(evt):
-	if 'yes' == prompt('Are you sure you want to delete page?\n\nType "yes" to confirm.\n\n','no'):
-		if confirm("Do you REALLY want to delete this page?\n\nAll versions will be deleted also.\n\n"):
+	def _ok1():
+		window.hide_input_dlg()
+		answer = doc['input_value'].value
+		def _ok2():
+			window.hide_confirm_dlg()
 			window.location.href='/{{module_name}}/delete{{wikipath}}'
-
+		if answer.lower() == 'yes':
+			doc['btnconfirmok'].unbind()
+			doc['btnconfirmok'].bind('click', _ok2)
+			message = 'Are you sure?'
+			window.show_confirm_dlg('Confirm', message)
+	doc['btninputok'].unbind()
+	doc['btninputok'].bind('click', _ok1)
+	title = 'Delete "{{wikipath}}" ? Type "yes" to confirm.'
+	window.show_input_dlg(title, 'Your answer?', 'no')
 %end
 
 
