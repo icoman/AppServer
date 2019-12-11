@@ -26,4 +26,13 @@
 $('#inputdlg').on('shown.bs.modal', function () {
     $('#input_value').focus();
 });  
+function show_input_dlg(title, name, value){
+	$('#input_title').text(title);
+	$('#input_name').text(name);
+	$('#input_value').val(value);
+	$('#inputdlg').modal('show');
+}
+function hide_input_dlg(){
+	$('#inputdlg').modal('hide');
+}
 </script>
