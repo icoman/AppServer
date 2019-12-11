@@ -27,7 +27,7 @@
     <div class="modal-footer">
 		<button type="button" class="btn btn-success btn-sm" id="btncustomok"><span class="glyphicon glyphicon-ok"></span> Ok</button>
 		<button type="button" class="btn btn-danger btn-sm" id="btncustomcancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
-		<button type="button" class="btn btn-info btn-sm" id="btncustomhelp"><span class="glyphicon glyphicon-remove"></span> Help</button>
+		<button type="button" class="btn btn-info btn-sm" id="btncustomhelp"><span class="glyphicon glyphicon-info-sign"></span> Help</button>
     </div>
 	</div>
 	</div>
