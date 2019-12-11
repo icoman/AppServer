@@ -47,30 +47,24 @@ function func_reload(data){
 
 function change_descr(module, description) {
 	$('.tooltip').hide();
-	$('#input_title').text(`Change description for "${module}" ?`);
-	$('#input_name').text('Description');
-	$('#input_value').val(description);
 	$("#btninputok").click(function(){
 		$('.tooltip').hide();
-		$('#inputdlg').modal('hide');
+		hide_input_dlg();
 		new_description = $('#input_value').val();
 		tmpl = document.getElementById('tmpl');
 		ix = tmpl.selectedIndex;
 		v = tmpl.item(ix).value;
 		post_request('/{{module_name}}/chdscr', {module:module,description:new_description}, func_reload);
 	}); 
-	$('#inputdlg').modal('show');
+	show_input_dlg(`Change description for "${module}" ?`, 'Description', description);
 }
 
 
 function addmodule(){
 	$('.tooltip').hide();
-	$('#input_title').text('Add new module?');
-	$('#input_name').text('Name');
-	$('#input_value').val('new module');
 	$("#btninputok").click(function(){
 		$('.tooltip').hide();
-		$('#inputdlg').modal('hide');
+		hide_input_dlg();
 		new_module_name = $('#input_value').val();
 		if(new_module_name){
 			tmpl = document.getElementById('tmpl');
@@ -79,18 +73,18 @@ function addmodule(){
 			post_request('/{{module_name}}/addmod', {tmpl:v,newmodulename:new_module_name}, func_reload);
 		}
 	}); 
-	$('#inputdlg').modal('show');
+	show_input_dlg('Add new module?', 'Name', 'new module');
 }
 
 
 
-$("#btnconfirmok").click(function(){
-	$('.tooltip').hide();
-	hide_confirm_dlg();
-	post_request('/{{module_name}}/restart', {}, func_reload);
-}); 
 function reboot_server(){
 	$('.tooltip').hide();
+	$("#btnconfirmok").click(function(){
+		$('.tooltip').hide();
+		hide_confirm_dlg();
+		post_request('/{{module_name}}/restart', {}, func_reload);
+	}); 
 	show_confirm_dlg('Confirm', 'Restart server?');
 }
 
