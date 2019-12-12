@@ -1,6 +1,22 @@
 % include('header.tpl', usebrython=True)
 
-<!-- Test Bootstrap with Templates -->
+<!-- 
+	Test Bootstrap with Templates
+	
+	Look into browser console and observe messages.
+
+	You should not combine button 'click' events 
+	from js (JavaScript) with events from py (Brython)
+	for the same button id.
+	
+	js: $("#button_id").off() clear event list for js only
+
+	py: document['button_id'].unbind() clear event list for py only
+
+	When used together (js and py), when click on button, 
+	browser call both function handlers.
+
+-->
 
 <h1>{{title}}</h1>
 
@@ -65,15 +81,18 @@
 
 <script type="text/javascript">
 
+var cnt1 = 1;
 $("#button1").off().click(function(){
 	ok_dlg('JavaScript','Hello from JavaScript');
 });
 $("#button3").off().click(function(){
 	$("#btnconfirmok").off().click(function(){
+		console.log('js ok, cnt1 =', cnt1++);
 		hide_confirm_dlg();
 		ok_dlg('Ok','Ok from JavaScript');
 	});
 	$("#btnconfirmcancel").off().click(function(){
+		console.log('js cancel, cnt1 =', cnt1++);
 		hide_confirm_dlg();
 		ok_dlg('Cancel','Cancel from JavaScript');
 	});
@@ -114,8 +133,9 @@ $("#button7").off().click(function(){
 </script>
 
 <script type="text/python">
-
 from browser import document, bind, window
+
+cnt2 = 1
 
 @bind(document['button2'], 'click')
 def _(evt):
@@ -124,9 +144,15 @@ def _(evt):
 @bind(document['button4'], 'click')
 def _(evt):
 	def _ok_func():
+		print('py ok, cnt2 =',cnt2)
+		global cnt2
+		cnt2 += 1
 		window.hide_confirm_dlg()
 		window.ok_dlg('Ok','Ok from Brython')
 	def _cancel_func():
+		print('py cancel, cnt2 =',cnt2)
+		global cnt2
+		cnt2 += 1
 		window.hide_confirm_dlg()
 		window.ok_dlg('Cancel','Cancel from Brython')
 	document['btnconfirmok'].unbind()
