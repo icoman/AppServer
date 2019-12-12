@@ -47,7 +47,7 @@ function func_reload(data){
 
 function change_descr(module, description) {
 	$('.tooltip').hide();
-	$("#btninputok").click(function(){
+	$("#btninputok").off().click(function(){
 		$('.tooltip').hide();
 		hide_input_dlg();
 		new_description = $('#input_value').val();
@@ -62,7 +62,7 @@ function change_descr(module, description) {
 
 function addmodule(){
 	$('.tooltip').hide();
-	$("#btninputok").click(function(){
+	$("#btninputok").off().click(function(){
 		$('.tooltip').hide();
 		hide_input_dlg();
 		new_module_name = $('#input_value').val();
@@ -80,7 +80,7 @@ function addmodule(){
 
 function reboot_server(){
 	$('.tooltip').hide();
-	$("#btnconfirmok").click(function(){
+	$("#btnconfirmok").off().click(function(){
 		$('.tooltip').hide();
 		hide_confirm_dlg();
 		post_request('/{{module_name}}/restart', {}, func_reload);

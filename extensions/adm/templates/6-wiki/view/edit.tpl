@@ -155,10 +155,9 @@ def showPageGroups():
 			idlabel = 'lck_{}'.format(cntck)
 			cntck += 1
 			chbox = html.INPUT(Type="checkbox", value=idgr, checked=isSelected, title=title)
-			#chbox.bind('click', on_checkbox_change)
+			chbox.bind('click', on_checkbox_change)
 			chbox.idlabel = idlabel
 			lab = html.LABEL(item+" ", value=item, title=title, id=idlabel, style=style)
-			lab.bind('click', on_checkbox_change)
 			if control is None:
 				control = html.SPAN()
 			else:
