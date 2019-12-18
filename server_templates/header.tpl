@@ -125,7 +125,7 @@ http://bootstrap3-menu.codedorigin.com/
 %end
 <button type="button" class="btn btn-danger btn-xs" 
 	onclick="edit_module_config('{{module_name}}')" data-toggle="tooltip" data-placement="auto top"
-	title="Edit user config" ><span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-tasks"></span>
+	title="Edit module config" ><span class="glyphicon glyphicon-cog"></span><span class="glyphicon glyphicon-tasks"></span>
 </button>
 <a href="/adm" data-toggle="tooltip" data-placement="auto top" class="btn btn-warning btn-xs" title="Adm modules"><span class="glyphicon glyphicon-wrench"></span></a>
 </p>
