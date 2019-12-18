@@ -17,8 +17,8 @@ import (
 	"encoding/json"
 )
 
-type dict map[string]string  //webcfg dict
-type cfdict map[string]dict  //webcfg data & fields
+type dict map[string]interface{}  //webcfg dict
+type cfdict map[string]dict       //webcfg data & fields
 
 type WebCfg struct {
 	Data	cfdict `json:"data"`
@@ -39,23 +39,25 @@ func LoadConfiguration(file string) WebCfg {
     return config
 }
 
-func (cfg WebCfg) GetString(name string, _default string) string{
+func (cfg WebCfg) GetString(name string, _default string) string {
 	var ret string = _default
 	for _, v := range cfg.Data {
 		if name == v["name"] {
-			ret = v["value"]
+			ret = v["value"].(string)
 			break
 		}
 	}
 	return ret
 }
 
-func (cfg WebCfg) GetInt(name string, _default int) int{
+func (cfg WebCfg) GetInt(name string, _default int) int {
 	var ret int = _default
 	for _, v := range cfg.Data {
 		if name == v["name"] {
-			_ret, err := strconv.Atoi(v["value"])
-			if err == nil {ret = _ret}
+			_ret, err := strconv.Atoi(v["value"].(string))
+			if err == nil {
+				ret = _ret
+			}
 			break
 		}
 	}
