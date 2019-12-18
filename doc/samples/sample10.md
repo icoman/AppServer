@@ -24,7 +24,7 @@ type fieldswebcfg map[string]fldarray //webcfg fields
 
 type WebCfg struct {
 	Data   datawebcfg   `json:"data"`
-	Fields fieldswebcfg `json:"fields"` //not used in this app, used only external app editor
+	Fields fieldswebcfg `json:"fields"` //not used in this app, used only by external app config editor
 }
 
 
