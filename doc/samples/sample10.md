@@ -17,12 +17,14 @@ import (
 	"encoding/json"
 )
 
-type dict map[string]interface{}  //webcfg dict
-type cfdict map[string]dict       //webcfg data & fields
+type dict map[string]interface{}
+type fldarray []interface{}
+type datawebcfg map[string]dict       //webcfg data
+type fieldswebcfg map[string]fldarray //webcfg fields
 
 type WebCfg struct {
-	Data	cfdict `json:"data"`
-	Fields	cfdict `json:"fields"` //ignored in this application
+	Data   datawebcfg   `json:"data"`
+	Fields fieldswebcfg `json:"fields"` //not used in this app, used only external app editor
 }
 
 
