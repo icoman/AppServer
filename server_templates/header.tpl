@@ -98,6 +98,8 @@ Customized with Twitter Bootstrap 3 Menu Generator
 http://bootstrap3-menu.codedorigin.com/
 -->
 
+<div class="hidden-print">
+
 <!-- start navbar -->
 {{!navbar}}
 <br><br><br>
@@ -106,7 +108,7 @@ http://bootstrap3-menu.codedorigin.com/
 
 
 %if not using_cookies:
-<div class="alert alert-warning hidden-print">
+<div class="alert alert-warning">
 % include('accept_cookies.tpl')
 </div>
 %end
@@ -116,7 +118,7 @@ http://bootstrap3-menu.codedorigin.com/
 %if userid:
 %if module_config.get('config menu'):
 %include('adm_edcfg.tpl')
-<p align="right" class="hidden-print">
+<p align="right">
 %if module_config.get('user config'):
 <button type="button" class="btn btn-primary btn-xs" 
 	onclick="edit_user_config('{{module_name}}')" data-toggle="tooltip" data-placement="auto top"
@@ -132,5 +134,6 @@ http://bootstrap3-menu.codedorigin.com/
 %end
 %end
 
-  
+</div>
+
   
