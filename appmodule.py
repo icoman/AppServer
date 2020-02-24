@@ -87,8 +87,8 @@ class AppModule(bottle.Bottle):
                 # executed on each request
                 if self.module_config.get('module disabled'):
                     return self.err_msg("Error", "Module disabled by admin")
+                accesspath = '/{}{}'.format(self.module_name, bottle.request.path)
                 if self.server_config.get('DEBUG'):
-                    accesspath = '/{}{}'.format(self.module_name, bottle.request.path)
                     print('auth {} {}'.format(bottle.request.method, accesspath))
                 # check permission
                 groups_list = self.module_config.get(permission)
