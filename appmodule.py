@@ -93,7 +93,8 @@ class AppModule(bottle.Bottle):
                 # check permission
                 groups_list = self.module_config.get(permission)
                 if not self.check_user_in_groups(groups_list):
-                    return html_redirect(self.login_url)
+                    url = '{}?back={}'.format(self.login_url, accesspath)
+                    return html_redirect(url)
                 return func(*a, **ka)
 
             return wrapper
