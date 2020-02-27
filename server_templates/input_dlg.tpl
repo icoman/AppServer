@@ -25,8 +25,18 @@
 <script>
 $('#inputdlg').on('shown.bs.modal', function () {
     $('#input_value').focus();
-});  
+});
+
+//prevent form submit when Enter key is pressed
+$(document).keypress(
+  function(event){
+    if (event.which == '13') {
+      event.preventDefault();
+    }
+});
+
 function show_input_dlg(title, name, value){
+	$('.tooltip').hide();
 	$('#input_title').text(title);
 	$('#input_name').text(name);
 	$('#input_value').val(value);

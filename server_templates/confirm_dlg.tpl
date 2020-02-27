@@ -21,6 +21,7 @@
 
 <script>
 function show_confirm_dlg(title, message){
+	$('.tooltip').hide();
 	$('#confirm_title').text(title);
 	$('#confirm_message').text(message);
 	$('#confirmdlg').modal('show');
