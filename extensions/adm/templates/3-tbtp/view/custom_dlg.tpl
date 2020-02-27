@@ -39,6 +39,7 @@ $('#customdlg').on('shown.bs.modal', function () {
     $('#custom_input_value1').focus();
 });  
 function show_custom_dlg(title, name1, value1, name2, value2, name3, value3){
+	$('.tooltip').hide();
 	$('#custom_input_title').text(title);
 	$('#custom_input_name1').text(name1);
 	$('#custom_input_value1').val(value1);
