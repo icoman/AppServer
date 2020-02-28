@@ -29,7 +29,7 @@ SOFTWARE.
 """
 
 import bottle, json, time
-import os, string, random, smtplib
+import os, sys, string, random, smtplib
 from email.mime.text import MIMEText
 
 import qrcode
@@ -45,6 +45,8 @@ from appmodule import AppModule
 from tools import html_redirect
 from .modeldb import setupDB, MyS, Users, Groups
 
+py   = sys.version_info
+py3k = py >= (3, 0, 0)
 
 def getRndString(n):
     ret = ''
@@ -575,31 +577,35 @@ def _():
     username = bottle.request.query.user
     url = bottle.request.query.url
     if username:
-        title = '{}'.format(username)
         with MyS() as session:
             obuser = session.query(Users).filter(Users.name == username).first()
             if obuser:
                 if new:
                     obuser._gen_token()
                 token = obuser.token
-                owner = obuser.fullname
+                fullname = obuser.fullname
             else:
                 raise Exception("User not found!")
 
+        title = '{}'.format(fullname)
         # Simple factory, just a set of rects.
         # factory = qrcode.image.svg.SvgImage
-
         # Fragment factory (also just a set of rects)
         # factory = qrcode.image.svg.SvgFragmentImage
-
         # Combined path factory, fixes white space that may occur when zooming
         factory = qrcode.image.svg.SvgPathImage
-
         # fill the background of the SVG with white:
         # factory = qrcode.image.svg.SvgFillImage
         # factory = qrcode.image.svg.SvgPathFillImage
 
-        qrdata = '{}?owner={}&code={}'.format(url, owner, token)
+        #if py3k:
+        #    import urllib.parse
+        #    quote = urllib.parse.quote
+        #else:
+        #    import urllib
+        #    quote = urllib.pathname2url
+        #qrdata = '{}?owner={}&code={}'.format(url, quote(username), token)
+        qrdata = '{}?owner={}&code={}'.format(url, username, token)
         img = qrcode.make(qrdata, image_factory=factory)
         output = StringIO()
         img.save(output)
