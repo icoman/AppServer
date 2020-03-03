@@ -81,8 +81,13 @@ class AppModule(bottle.Bottle):
 
     def auth(self, permission):
         # check permission access
+        #
+        # allow multiple permissions:
+        # @app.auth(['access module HC','access module FD'])
+        #
+        saved_permission = permission
         def decorator(func):
-            @functools.wraps(func)
+            #@functools.wraps(func)
             def wrapper(*a, **ka):
                 # executed on each request
                 if self.module_config.get('module disabled'):
@@ -91,8 +96,16 @@ class AppModule(bottle.Bottle):
                 if self.server_config.get('DEBUG'):
                     print('auth {} {}'.format(bottle.request.method, accesspath))
                 # check permission
-                groups_list = self.module_config.get(permission)
-                if not self.check_user_in_groups(groups_list):
+                authenticated = False
+                permission = saved_permission
+                if type(permission) is type(""):
+                    permission = [permission]
+                for p in permission:
+                    groups_list = self.module_config.get(p)
+                    if self.check_user_in_groups(groups_list):
+                        authenticated = True
+                        break
+                if not authenticated:
                     url = '{}?back={}'.format(self.login_url, accesspath)
                     return html_redirect(url)
                 return func(*a, **ka)
