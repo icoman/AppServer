@@ -6,7 +6,7 @@
 
 MIT License
 
-Copyright (c) 2017,2018 Ioan Coman
+Copyright (c) 2017-2020 Ioan Coman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,8 @@ import datetime
 from sqlalchemy import create_engine, Table, ForeignKey
 from sqlalchemy import Column, Integer
 from sqlalchemy import String, Unicode, DateTime
-# from sqlalchemy import LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.pool import QueuePool
 
 Base = declarative_base()
@@ -79,7 +78,9 @@ class WikiVersions(Base):
 
 
 def getSession():
-    return sessionmaker(bind=engine)()
+    return scoped_session(sessionmaker(autocommit=False,
+                                         autoflush=False,
+                                         bind=engine))
 
 
 class MyS(object):
@@ -104,7 +105,7 @@ class MyS(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             self.session.commit()
-            self.session.close()
+            self.session.remove()
 
 
 def addWikiPage(path, title, body, userid, username, groups):

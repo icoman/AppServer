@@ -6,7 +6,7 @@
 
 MIT License
 
-Copyright (c) 2017 Ioan Coman
+Copyright (c) 2017-2020 Ioan Coman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,8 @@ SOFTWARE.
 import datetime
 from sqlalchemy import create_engine, Column, Integer, Sequence
 from sqlalchemy import String, Unicode, DateTime, Boolean
-# from sqlalchemy import LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 Base = declarative_base()
@@ -53,7 +52,10 @@ class Todo(Base):
 
 
 def getSession():
-    return sessionmaker(bind=engine)()
+    return scoped_session(sessionmaker(autocommit=False,
+                                         autoflush=False,
+                                         bind=engine))
+
 
 
 class MyS(object):
@@ -78,7 +80,7 @@ class MyS(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             self.session.commit()
-            self.session.close()
+            self.session.remove()
 
 
 def setupDB(DSN, init=False):
