@@ -40,7 +40,8 @@ import bottle
 from beaker.middleware import SessionMiddleware
 
 from appmodule import AppModule
-from tools import html_redirect, get_props, SSLWSGIRefServer
+from tools import html_redirect, get_props
+from tools import SSLWSGIRefServer, myWaitressServer, myPasteServer, myCherryPyServer
 
 server_config = get_props('config.ini')
 
@@ -207,13 +208,18 @@ def main():
             '''
                 gevent: works with patches and is quite good
                 eventlet, tornado, wsgiref: pretty good
-
                 cherrypy, twisted, waitress, paste: are only which works with multithreading
             '''
             webserver = server_config.get('webserver')
             if webserver == 'gevent':
                 from gevent import monkey
                 monkey.patch_all()
+            if webserver == 'mywaitress':
+                webserver = myWaitressServer
+            if webserver == 'mypaste':
+                webserver = myPasteServer
+            if webserver == 'mycherrypy':
+                webserver = myCherryPyServer
     load_modules()
     session_root = SessionMiddleware(root, session_setup())
     bottle.run(app=session_root, server=webserver,

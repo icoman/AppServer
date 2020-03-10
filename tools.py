@@ -312,3 +312,41 @@ class SSLWSGIRefServer(bottle.ServerAdapter):
             certfile='server.pem',  # path to certificate
             server_side=True)
         srv.serve_forever()
+
+class myWaitressServer(bottle.ServerAdapter):
+    # Multi-threaded, poweres Pyramid
+    def run(self, handler):
+        from waitress import serve
+        serve(handler, host=self.host, port=self.port, threads=10)
+
+class myPasteServer(bottle.ServerAdapter):
+    # Multi-threaded, stable, tried and tested
+    def run(self, handler): # pragma: no cover
+        from paste import httpserver
+        httpserver.serve(handler, host=self.host, port=str(self.port),
+                         **self.options)
+class myCherryPyServer(bottle.ServerAdapter):
+    # Multi-threaded and very stable
+    def run(self, handler): # pragma: no cover
+        import wsgiserver
+        self.options['bind_addr'] = (self.host, self.port)
+        self.options['wsgi_app'] = handler
+
+        certfile = self.options.get('certfile')
+        if certfile:
+            del self.options['certfile']
+        keyfile = self.options.get('keyfile')
+        if keyfile:
+            del self.options['keyfile']
+
+        server = wsgiserver.CherryPyWSGIServer(**self.options)
+        if certfile:
+            server.ssl_certificate = certfile
+        if keyfile:
+            server.ssl_private_key = keyfile
+
+        try:
+            server.start()
+        finally:
+            server.stop()
+
