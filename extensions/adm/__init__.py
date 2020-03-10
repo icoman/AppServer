@@ -32,6 +32,7 @@ import bottle
 import sys
 import os
 import time
+import datetime
 import json
 from distutils import dir_util
 from shutil import copyfile
@@ -52,6 +53,7 @@ class MyAppModule(AppModule):
             initialisation code
         """
         self.datetimeformat = "%d-%b-%Y %H:%M"
+        self.start_time = datetime.datetime.now()
         #
         # json module config contains sensitive data (like SQL DSN)
         # and is accesible ony to ADMIN = users in group id=1
@@ -81,6 +83,7 @@ def _():
     extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
     templates_folder = os.path.join(app.module_folder, 'templates')
     allmodules = []
+    uptime = datetime.datetime.now() - app.start_time
     for ext in os.listdir(extensions_folder):
         if os.path.isdir(os.path.join(extensions_folder, ext)) and not ext.startswith('_'):
             description_file = os.path.join(extensions_folder, ext, 'description.txt')
@@ -99,7 +102,10 @@ def _():
                 with open(filename) as f:
                     description = f.read()
             alltemplates.append((i, description))
-    return dict(title=title, pyver=sys.version, allmodules=allmodules, alltemplates=alltemplates)
+    return dict(title=title,
+                uptime=uptime, pyver=sys.version,
+                allmodules=allmodules,
+                alltemplates=alltemplates)
 
 
 @app.post('/restart')
@@ -111,7 +117,7 @@ def _():
     """
     print('Restarting server.')
     interrupt_main()
-    return 'Server is restarting ...'
+    return dict(ok=True, data='Server is restarting ...')
 
 
 @app.post('/addmod')

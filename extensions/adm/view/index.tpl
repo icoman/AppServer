@@ -42,7 +42,7 @@ function post_request(url, data, myfunc){
 }
 
 function func_reload(data){
-	location.reload(); 
+	setTimeout(function (){location.reload();}, 15000);
 }
 
 function change_descr(module, description) {
@@ -112,6 +112,7 @@ function reboot_server(){
 </p>
 
 <p>Python version: {{pyver}}</p>
+<p>Uptime: {{uptime}}</p>
 
 <table class="table table-nonfluid table-hover">
 <thead>
