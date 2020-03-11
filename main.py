@@ -204,7 +204,11 @@ def main():
         if(FROZEN):
             print('Running frozen.')
         print('SSL = {}, FCGI = {}, DEBUG = {}, RELOADER = {}'.format(useSSL, useFCGI, DEBUG, RELOADER))
+        t1 = time.time()
         load_modules()
+        t2 = time.time()
+        if DEBUG:
+            print('Total loading modules: {:.2f} sec.\n'.format(t2-t1))
 
     if useSSL:
         webserver = SSLWSGIRefServer(host=HOST, port=PORT)
