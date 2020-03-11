@@ -75,7 +75,7 @@
 <!--
 function info(){
 	var loadTime = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.navigationStart;
-	console.log('Window load:', loadTime, 'ms.');
+	console.log('Window load:', loadTime, 'ms, size:', $(window).width(), 'x', $(window).height());
 };
 $(document).ready(function(){
 %if vars().get('usebrython'):
@@ -92,28 +92,24 @@ $(document).ready(function(){
 <body id="body">
 
 
+<div class="hidden-print">
+
 %if not vars().get('disable_navbar'):
 <!--
 Customized with Twitter Bootstrap 3 Menu Generator
 http://bootstrap3-menu.codedorigin.com/
 -->
 
-<div class="hidden-print">
-
 <!-- start navbar -->
 {{!navbar}}
 <br><br><br>
 <!-- end navbar -->
-%end
-
 
 %if not using_cookies:
 <div class="alert alert-warning">
 % include('accept_cookies.tpl')
 </div>
 %end
-
-
 
 %if userid:
 %if module_config.get('config menu'):
@@ -131,9 +127,11 @@ http://bootstrap3-menu.codedorigin.com/
 </button>
 <a href="/adm" data-toggle="tooltip" data-placement="auto top" class="btn btn-warning btn-xs" title="Adm modules"><span class="glyphicon glyphicon-wrench"></span></a>
 </p>
-%end
-%end
+%end # config menu
+%end # userid
+%end # disable_navbar
 
+<!-- end hidden print -->
 </div>
 
   

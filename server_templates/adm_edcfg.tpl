@@ -15,7 +15,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-		<h4 id="edpropstitle" class="modal-title">--Undefined--</h4>
+		<h4 id="edpropstitle" class="modal-title">-- edprops title --</h4>
       </div> 
 	<div class="modal-body" id="edpropsloader">
 		<div class="loader col-xs-3"></div>
