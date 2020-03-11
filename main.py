@@ -31,6 +31,7 @@ SOFTWARE.
 
 import os
 import sys
+import time
 import datetime
 import importlib
 import socket
@@ -137,10 +138,14 @@ def load_modules():
         fullpath = os.path.join(extensions_folder, module_name)
         if not module_name.startswith('_') and os.path.isdir(fullpath):
             try:
+                t1 = time.time()
                 prefix = '/{}'.format(module_name)
                 module = importlib.import_module(module_name)
                 module.update_app(module_name, server_config)
                 root.mount(prefix, module.app)
+                t2 = time.time()
+                if DEBUG:
+                    print('\tLoading "{}" in {:.2f} sec'.format(module_name, t2-t1))
             except Exception as ex:
                 traceback.print_exc(file=sys.stdout)
 
@@ -199,6 +204,8 @@ def main():
         if(FROZEN):
             print('Running frozen.')
         print('SSL = {}, FCGI = {}, DEBUG = {}, RELOADER = {}'.format(useSSL, useFCGI, DEBUG, RELOADER))
+        load_modules()
+
     if useSSL:
         webserver = SSLWSGIRefServer(host=HOST, port=PORT)
     else:
@@ -220,7 +227,6 @@ def main():
                 webserver = myPasteServer
             if webserver == 'mycherrypy':
                 webserver = myCherryPyServer
-    load_modules()
     session_root = SessionMiddleware(root, session_setup())
     bottle.run(app=session_root, server=webserver,
                host=HOST, port=PORT, debug=DEBUG, reloader=RELOADER)
