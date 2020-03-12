@@ -291,8 +291,7 @@ def load_config(config_file):
                         value = [int(x) for x in _e]
                     except:
                         value = []
-                d = {name: value}
-                config.update(d)
+                config[name] = value
     return config
 
 
