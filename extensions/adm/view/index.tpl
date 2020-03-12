@@ -42,7 +42,7 @@ function post_request(url, data, myfunc){
 }
 
 function func_reload(data){
-	setTimeout(function (){location.reload();}, 15000);
+	setTimeout(function (){location.reload();}, 1000);
 }
 
 function change_descr(module, description) {
