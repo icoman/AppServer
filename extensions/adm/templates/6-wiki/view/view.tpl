@@ -100,15 +100,14 @@
 		<div class="col-xs-2">
 		</div>
 		<div class="col-xs-10">
-		<button type="submit" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-paperclip"></span> Upload</span></button>
-		<button type="button" class="btn btn-danger btn-sm" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</span></button>
+		<button type="submit" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-paperclip"></span> Upload</button>
+		<button type="button" class="btn btn-danger btn-sm" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
 		</div>
     </div>
 		</form>
 
 	</div>
 	</div>
-</div>
 </div>
 </div>
 
