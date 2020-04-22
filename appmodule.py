@@ -26,7 +26,6 @@ SOFTWARE.
 
 import os
 import json
-import functools
 import bottle
 
 from tools import html_redirect, make_bootstrap_navbar, load_config
@@ -73,22 +72,33 @@ class AppModule(bottle.Bottle):
         self.init()
 
     def init(self):
-        #
-        # place initialisation code
-        # into derived class
-        #
+        """
+            place initialisation code
+            into derived class
+        """
         pass
 
     def auth(self, permission):
-        # check permission access
-        #
-        # allow multiple permissions:
-        # @app.auth(['access module HC','access module FD'])
-        #
+        """
+
+        decorator function for check permission access
+        
+        permission is a string, a list or a tuple
+        
+        single permission:
+          @app.auth('access module')
+          def _():
+              ...
+        
+        allow multiple permissions:
+          @app.auth(['access module HC','access module FD'])
+          def _():
+              ...
+
+        """
         saved_permission = permission
         def decorator(func):
-            #@functools.wraps(func)
-            def wrapper(*a, **ka):
+            def wrapper(*args, **kwargs):
                 # executed on each request
                 if self.module_config.get('module disabled'):
                     return self.err_msg("Error", "Module disabled by admin")
@@ -98,7 +108,7 @@ class AppModule(bottle.Bottle):
                 # check permission
                 authenticated = False
                 permission = saved_permission
-                if type(permission) is type(""):
+                if isinstance(permission, (str,)):
                     permission = [permission]
                 for p in permission:
                     groups_list = self.module_config.get(p)
@@ -108,23 +118,24 @@ class AppModule(bottle.Bottle):
                 if not authenticated:
                     url = '{}?back={}'.format(self.login_url, accesspath)
                     return html_redirect(url)
-                return func(*a, **ka)
+                return func(*args, **kwargs)
 
             return wrapper
 
         return decorator
 
     def view(self, template_name):
-        # render template with decorated function
+        """
+            decorator function for render template
+        """
         def decorator(func):
-            @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 if self.module_config.get('module disabled'):
                     return self.err_msg("Error", "Module disabled by admin")
                 else:
                     result = func(*args, **kwargs)
                     if isinstance(result, (dict,)):
-                        # function return a dict
+                        # if function return a dict, then render a template
                         return self.render_template(template_name, result)
                     else:
                         return result
