@@ -24,7 +24,7 @@ function post_request(url, data, myfunc){
 	}).done(function( ret ) {
 		if(!ret.ok) {
 			if(ret.data){
-				ok_dlg('Error',ret.data);
+				ok_dlg('Server message',ret.data);
 				}
 			else {
 				var cpst = 'Redirect '+'to';
