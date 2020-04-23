@@ -32,7 +32,6 @@ from tools import html_redirect, make_bootstrap_navbar, load_config
 
 
 #
-# obs:
 #   module config (config.json) is cached in AppModule
 #   user config (config_xxx.json for user xxx) is cached in beaker session
 #

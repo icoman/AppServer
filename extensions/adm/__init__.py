@@ -40,6 +40,7 @@ from shutil import copyfile
 from tools import html_redirect
 from appmodule import AppModule
 
+import threading
 try:
     from thread import interrupt_main
 except:
@@ -115,9 +116,14 @@ def _():
         Restart server.
         Only builtin admins (group=1) can do it.
     """
-    print('Restarting server.')
-    interrupt_main()
-    return dict(ok=True, data='Server is restarting ...')
+    def _restart():
+        print('Restarting server.')
+        time.sleep(1)
+        interrupt_main()
+    t = threading.Thread(target=_restart, kwargs=dict())
+    t.daemon = True
+    t.start()
+    return dict(ok=False, data='Server is restarting ...')
 
 
 @app.post('/addmod')
