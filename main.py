@@ -65,7 +65,7 @@ def _():
 
 @root.route('/favicon.ico')
 def _():
-    return bottle.static_file('favicon.ico', root=server_config.get('static_folder'))
+    return bottle.static_file('favicon.ico', root=root.module_static_folder)
 
 
 @root.route('/static/<path:path>')
