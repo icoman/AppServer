@@ -51,6 +51,7 @@ RELOADER = int(server_config.get('RELOADER', 0))
 
 server_folder = server_config['DATAFOLDER']
 extensions_folder = os.path.join(server_folder, server_config.get('extensions_folder'))
+sessions_folder = os.path.join(server_folder, server_config.get('sessions_folder'))
 sys.path.append(extensions_folder)
 
 root = AppModule()
@@ -106,7 +107,11 @@ def session_setup():
 
     return {
         # session stored only in cookie (max 4096 bytes) is best for cluster
-        'session.type': 'cookie',
+        # 'session.type': 'cookie',
+        
+        
+        'session.type':'file',
+        'session.data_dir':sessions_folder,
 
         'session.path': '/',
         'session.httponly': True,
