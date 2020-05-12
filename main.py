@@ -107,11 +107,11 @@ def session_setup():
 
     return {
         # session stored only in cookie (max 4096 bytes) is best for cluster
-        # 'session.type': 'cookie',
+        'session.type': 'cookie',
         
         
-        'session.type':'file',
-        'session.data_dir':sessions_folder,
+        #'session.type':'file',
+        #'session.data_dir':sessions_folder,
 
         'session.path': '/',
         'session.httponly': True,
