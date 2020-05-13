@@ -188,7 +188,7 @@ def login():
             EmergencyAdmin = bottle.request.query.EmergencyAdmin
             if EmergencyAdmin:
                 print('Login Emergency Admin')
-                bs.delete()
+                bs.clear()
                 # something random
                 bs[getRndString(12)] = getRndString(32)
                 bs['username'] = 'emadmin'
@@ -210,7 +210,7 @@ def login():
                 obuser = session.query(Users).filter(Users.name == user).first()
                 if obuser:
                     if obuser._validate(password):
-                        bs.delete()
+                        bs.clear()
                         # when password is correct, set the session cookie
                         # something random
                         bs[getRndString(12)] = getRndString(32)
@@ -550,7 +550,7 @@ def _():
         obuser = session.query(Users).filter(Users.token == token).first()
         if obuser:
             # user is logged in
-            bs.delete()
+            bs.clear()
             bs[getRndString(12)] = getRndString(32)
             bs['username'] = obuser.name
             bs['userid'] = obuser.id
