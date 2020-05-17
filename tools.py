@@ -89,7 +89,7 @@ def _get_props(filename, sep, comment=";#"):
                     line = line[:-1]
                     if flag:
                         # add to accumulator
-                        accumulator = string.join((accumulator, line), ' ')
+                        accumulator = ' '.join((accumulator, line))
                     else:
                         # set
                         accumulator = line
@@ -97,7 +97,7 @@ def _get_props(filename, sep, comment=";#"):
                     continue
                 if flag:
                     # add last part of line to accumulator
-                    accumulator = string.join((accumulator, line), ' ')
+                    accumulator = ' '.join((accumulator, line))
                     line = accumulator
                     accumulator = ''
                     flag = False
@@ -130,16 +130,16 @@ def _get_props(filename, sep, comment=";#"):
     return ret
 
 
-
 def _make_login_logout(user, icon, loginurl, logouturl):
     if user:
         title = 'Logout {}'.format(user)
         link = logouturl
     else:
-        title = 'Login'.format(user)
+        title = 'Login'
         link = loginurl
     if icon:
-        icontitle = '<span class="glyphicon glyphicon-{}"></span> {}'.format(icon, title)
+        icontitle = '<span class="glyphicon glyphicon-{}"></span> {}'.format(
+            icon, title)
     else:
         icontitle = title
     return icontitle, link
@@ -153,7 +153,7 @@ def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, bran
     user_groups = bs.get('groups') or [0]
     navcode = ''
     L = []
-    menuitem = None
+    menuitem = []
     with open(menufile, 'rt') as f:
         for line in f.read().split('\n'):
             line = line.replace('\r', '')
@@ -167,7 +167,8 @@ def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, bran
             groups = json.loads(groups)
             if line[0] in string.whitespace:
                 if menuitem:
-                    menuitem[5].append((link.strip(), title, icon, groups, description))
+                    menuitem[5].append(
+                        (link.strip(), title, icon, groups, description))
             else:
                 if menuitem:
                     L.append(menuitem)
@@ -177,7 +178,8 @@ def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, bran
     for i in L:
         link, title, icon, groups, description, childs = i
         if icon:
-            icontitle = '<span class="glyphicon glyphicon-{}"></span> {}'.format(icon, title)
+            icontitle = '<span class="glyphicon glyphicon-{}"></span> {}'.format(
+                icon, title)
         else:
             icontitle = title
         hasAccess = False
@@ -203,11 +205,13 @@ def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, bran
                 if not hasAccess:
                     continue
                 if ch_icon:
-                    ch_icontitle = '<span class="glyphicon glyphicon-{}"></span> {}'.format(ch_icon, ch_title)
+                    ch_icontitle = '<span class="glyphicon glyphicon-{}"></span> {}'.format(
+                        ch_icon, ch_title)
                 else:
                     ch_icontitle = ch_title
                 if ch_title == 'loginlogout':
-                    ch_icontitle, ch_link = _make_login_logout(userfullname, ch_icon, loginurl, logouturl)
+                    ch_icontitle, ch_link = _make_login_logout(
+                        userfullname, ch_icon, loginurl, logouturl)
                 if ch_description:
                     ch_descr = ' title="{}"'.format(ch_description)
                 else:
@@ -216,7 +220,8 @@ def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, bran
                     active = ' class="active"'
                 else:
                     active = ''
-                menuchilds += '\n<li{}><a href="{}"{}>{}</a></li>'.format(active, ch_link, ch_descr, ch_icontitle)
+                menuchilds += '\n<li{}><a href="{}"{}>{}</a></li>'.format(
+                    active, ch_link, ch_descr, ch_icontitle)
             if link == url:
                 active = ' active'
             else:
@@ -233,14 +238,17 @@ def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, bran
             else:
                 descr = ''
             if title == 'loginlogout':
-                icontitle, link = _make_login_logout(userfullname, icon, loginurl, logouturl)
+                icontitle, link = _make_login_logout(
+                    userfullname, icon, loginurl, logouturl)
             if link == url:
                 active = ' active'
             else:
                 active = ''
-            navcode += '\n<li{}><a href="{}"{}>{}</a></li>'.format(active, link, descr, icontitle)
+            navcode += '\n<li{}><a href="{}"{}>{}</a></li>'.format(
+                active, link, descr, icontitle)
     if brandurl and brandtitle:
-        brand = '<a href="{}" class="navbar-brand">{}</a>'.format(brandurl, brandtitle)
+        brand = '<a href="{}" class="navbar-brand">{}</a>'.format(
+            brandurl, brandtitle)
     else:
         brand = ''
     ret = '''
@@ -312,21 +320,25 @@ class SSLWSGIRefServer(bottle.ServerAdapter):
             server_side=True)
         srv.serve_forever()
 
+
 class myWaitressServer(bottle.ServerAdapter):
     # Multi-threaded, poweres Pyramid
     def run(self, handler):
         from waitress import serve
         serve(handler, host=self.host, port=self.port, threads=10)
 
+
 class myPasteServer(bottle.ServerAdapter):
     # Multi-threaded, stable, tried and tested
-    def run(self, handler): # pragma: no cover
+    def run(self, handler):  # pragma: no cover
         from paste import httpserver
         httpserver.serve(handler, host=self.host, port=str(self.port),
                          **self.options)
+
+
 class myCherryPyServer(bottle.ServerAdapter):
     # Multi-threaded and very stable
-    def run(self, handler): # pragma: no cover
+    def run(self, handler):  # pragma: no cover
         import wsgiserver
         self.options['bind_addr'] = (self.host, self.port)
         self.options['wsgi_app'] = handler
@@ -349,3 +361,11 @@ class myCherryPyServer(bottle.ServerAdapter):
         finally:
             server.stop()
 
+
+class myGeventWebSocketServer(bottle.ServerAdapter):
+    def run(self, handler):
+        from gevent import pywsgi
+        from geventwebsocket.handler import WebSocketHandler
+        server = pywsgi.WSGIServer(
+            (self.host, self.port), handler, handler_class=WebSocketHandler)
+        server.serve_forever()

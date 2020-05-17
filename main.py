@@ -7,7 +7,7 @@
 
 MIT License
 
-Copyright (c) 2017-2019 Ioan Coman
+Copyright (c) 2017-2020 Ioan Coman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,9 @@ from beaker.middleware import SessionMiddleware
 
 from appmodule import AppModule
 from tools import html_redirect, get_props
-from tools import SSLWSGIRefServer, myWaitressServer, myPasteServer, myCherryPyServer
+from tools import SSLWSGIRefServer, myWaitressServer, myPasteServer
+from tools import myCherryPyServer, myGeventWebSocketServer
+
 
 server_config = get_props('config.ini')
 
@@ -50,8 +52,10 @@ DEBUG = int(server_config.get('DEBUG', 0))
 RELOADER = int(server_config.get('RELOADER', 0))
 
 server_folder = server_config['DATAFOLDER']
-extensions_folder = os.path.join(server_folder, server_config.get('extensions_folder'))
-sessions_folder = os.path.join(server_folder, server_config.get('sessions_folder'))
+extensions_folder = os.path.join(
+    server_folder, server_config.get('extensions_folder'))
+sessions_folder = os.path.join(
+    server_folder, server_config.get('sessions_folder'))
 sys.path.append(extensions_folder)
 
 root = AppModule()
@@ -90,7 +94,8 @@ def callback():
 
 def session_setup():
     # Beaker session setup
-    session_timeout = int(server_config.get('session_timeout', 3600))  # Seconds
+    session_timeout = int(server_config.get(
+        'session_timeout', 3600))  # Seconds
     random_session_keys = server_config.get('random_session_keys')
     if random_session_keys:
         # use random beaker session keys for single server
@@ -108,10 +113,9 @@ def session_setup():
     return {
         # session stored only in cookie (max 4096 bytes) is best for cluster
         'session.type': 'cookie',
-        
-        
-        #'session.type':'file',
-        #'session.data_dir':sessions_folder,
+
+        # 'session.type':'file',
+        # 'session.data_dir':sessions_folder,
 
         'session.path': '/',
         'session.httponly': True,
@@ -137,7 +141,8 @@ def session_setup():
 
 
 def load_modules():
-    extensions_folder = os.path.join(server_folder, server_config.get('extensions_folder'))
+    extensions_folder = os.path.join(
+        server_folder, server_config.get('extensions_folder'))
     sys.path.append(extensions_folder)
     for module_name in os.listdir(extensions_folder):
         fullpath = os.path.join(extensions_folder, module_name)
@@ -150,25 +155,28 @@ def load_modules():
                 root.mount(prefix, module.app)
                 t2 = time.time()
                 if DEBUG:
-                    print('\tLoading "{}" in {:.2f} sec'.format(module_name, t2-t1))
+                    print('\tLoading "{}" in {:.2f} sec'.format(
+                        module_name, t2-t1))
             except Exception as ex:
                 traceback.print_exc(file=sys.stdout)
 
+
 def fix_frozen_apps():
     #
-    #fix import for py2exe, cx_freeze, pyinstaller, ...
+    # fix import for py2exe, cx_freeze, pyinstaller, ...
     #
-    #import here whatever fail to import when application is frozen
+    # import here whatever fail to import when application is frozen
     #
     #import pyodbc, pymssql, _mssql
-    import pymssql, _mssql
+    import pymssql
+    import _mssql
     import sqlalchemy
     import sqlalchemy.sql
     import sqlalchemy.ext
     from sqlalchemy.sql import default_comparator
     from sqlalchemy.ext import declarative, baked
 
-    #ImportError: No module named image, audio and message
+    # ImportError: No module named image, audio and message
     from email.mime.image import MIMEImage
     from email.mime.audio import MIMEAudio
     from email.mime.message import MIMEMessage
@@ -183,7 +191,7 @@ def fix_frozen_apps():
     #import Crypto
     #import Crypto.Util
 
-    #for server extensions
+    # for server extensions
     import openpyxl
     import msgpackrpc
     import tools
@@ -208,7 +216,8 @@ def main():
         print('Python version: {}'.format(sys.version))
         if(FROZEN):
             print('Running frozen.')
-        print('SSL = {}, FCGI = {}, DEBUG = {}, RELOADER = {}'.format(useSSL, useFCGI, DEBUG, RELOADER))
+        print('SSL = {}, FCGI = {}, DEBUG = {}, RELOADER = {}'.format(
+            useSSL, useFCGI, DEBUG, RELOADER))
         t1 = time.time()
         load_modules()
         t2 = time.time()
@@ -236,6 +245,9 @@ def main():
                 webserver = myPasteServer
             if webserver == 'mycherrypy':
                 webserver = myCherryPyServer
+            if webserver == 'mygeventws':
+                webserver = myGeventWebSocketServer
+
     session_root = SessionMiddleware(root, session_setup())
     bottle.run(app=session_root, server=webserver,
                host=HOST, port=PORT, debug=DEBUG, reloader=RELOADER)
