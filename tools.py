@@ -310,6 +310,7 @@ class SSLWSGIRefServer(bottle.ServerAdapter):
         if self.quiet:
             class QuietHandler(WSGIRequestHandler):
                 def log_request(*args, **kw):
+                    # pylint: disable=E0211
                     pass
 
             self.options['handler_class'] = QuietHandler

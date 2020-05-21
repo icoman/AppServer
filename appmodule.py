@@ -25,7 +25,7 @@ SOFTWARE.
 """
 
 import os
-import json
+import threading
 import bottle
 
 from tools import html_redirect, make_bootstrap_navbar, load_config
@@ -42,6 +42,8 @@ class AppModule(bottle.Bottle):
         super(AppModule, self).__init__(catchall, autojson)
         self.error_handler[404] = self._err_http_server
         self.error_handler[500] = self._err_http_server
+        self._tpl_map_lock = threading.Lock()
+        self._templates_map = {}
 
     def update(self, module_name, server_config):
         """
@@ -52,19 +54,23 @@ class AppModule(bottle.Bottle):
         self.server_config = server_config
         server_folder = server_config['DATAFOLDER']
         server_global_tplfolder = server_config.get('server_global_tplfolder')
-        self.server_template_folder = os.path.join(server_folder, server_global_tplfolder)
+        self.server_template_folder = os.path.join(
+            server_folder, server_global_tplfolder)
         static_folder = server_config.get('static_folder')
         template_folder = server_config.get('template_folder')
         if module_name:
             self.module_name = module_name
-            extensions_folder = os.path.join(server_folder, server_config.get('extensions_folder'))
+            extensions_folder = os.path.join(
+                server_folder, server_config.get('extensions_folder'))
             self.module_folder = os.path.join(extensions_folder, module_name)
         else:
             self.module_name = ''
             self.module_folder = server_folder
         self.login_url = server_config.get('login_url')
-        self.module_static_folder = os.path.join(self.module_folder, static_folder)
-        self.module_template_folder = os.path.join(self.module_folder, template_folder)
+        self.module_static_folder = os.path.join(
+            self.module_folder, static_folder)
+        self.module_template_folder = os.path.join(
+            self.module_folder, template_folder)
         # load module config - if config.json changed, must restart server to apply changes
         self.module_config = self.load_config('config.json')
         # call custom init
@@ -81,14 +87,14 @@ class AppModule(bottle.Bottle):
         """
 
         decorator function for check permission access
-        
+
         permission is a string, a list or a tuple
-        
+
         single permission:
           @app.auth('access module')
           def _():
               ...
-        
+
         allow multiple permissions:
           @app.auth(['access module HC','access module FD'])
           def _():
@@ -96,12 +102,14 @@ class AppModule(bottle.Bottle):
 
         """
         saved_permission = permission
+
         def decorator(func):
             def wrapper(*args, **kwargs):
                 # executed on each request
                 if self.module_config.get('module disabled'):
                     return self.err_msg("Error", "Module disabled by admin")
-                accesspath = '/{}{}'.format(self.module_name, bottle.request.path)
+                accesspath = '/{}{}'.format(self.module_name,
+                                            bottle.request.path)
                 if self.server_config.get('DEBUG'):
                     print('auth {} {}'.format(bottle.request.method, accesspath))
                 # check permission
@@ -135,7 +143,8 @@ class AppModule(bottle.Bottle):
                     result = func(*args, **kwargs)
                     if isinstance(result, (dict,)):
                         # if function return a dict, then render a template
-                        return self.render_template(template_name, result)
+                        template_body = self._get_template(template_name)
+                        return self.render_template(template_body, result)
                     else:
                         return result
 
@@ -154,46 +163,62 @@ class AppModule(bottle.Bottle):
 
     def _get_template(self, templateName):
         """
-            return bottle template from module folder
+            return raw content of template
+            try to cache results
         """
-        TEMPLATE_PATH = [self.server_template_folder, self.module_template_folder]
+        ret = None
         if templateName:
-            filename1 = os.path.join(self.server_template_folder, templateName)
-            filename2 = os.path.join(self.module_template_folder, templateName)
-            if os.path.isfile(filename1):
-                filename = filename1
-            else:
-                filename = filename2
-            with open(filename, 'rt') as f:
-                tpl = bottle.SimpleTemplate(f, lookup=TEMPLATE_PATH)
-        else:
-            tpl = None
-        return tpl
+            body = self._templates_map.get(templateName, None)
+            if body is None:
+                filename1 = os.path.join(
+                    self.server_template_folder, templateName)
+                filename2 = os.path.join(
+                    self.module_template_folder, templateName)
+                if os.path.isfile(filename1):
+                    filename = filename1
+                else:
+                    filename = filename2
+                with open(filename, 'rt') as f:
+                    body = f.read()
+                if not self.server_config.get('DEBUG'):
+                    with self._tpl_map_lock:
+                        self._templates_map[templateName] = body
+            ret = body
+        return ret
 
-    def render_template(self, template_name, dict_data):
+    def _update_data(self, data):
         """
-            populate a bottle template
-            with a dictionary data
-            starting from template file name
+            Inject some info into data used
+            to render a template
         """
-        template = self._get_template(template_name)
-        accesspath = '/{}{}'.format(self.module_name, bottle.request.path)
-        if accesspath.endswith('/'):
-            accesspath = accesspath[:-1]
         bs = self.get_beaker_session()
         userid = bs.get('userid') or 0
         cookielaw_name = self.server_config.get('cookielaw_name')
         using_cookies = bottle.request.get_cookie(cookielaw_name)
-        data = dict_data.copy()
+        accesspath = '/{}{}'.format(self.module_name, bottle.request.path)
+        if accesspath.endswith('/'):
+            accesspath = accesspath[:-1]
         extra_data = dict(
-            module_name = self.module_name,
-            module_config = self.module_config,
-            user_config = self.get_user_config(),
-            userid = userid,
-            using_cookies = using_cookies,
-            navbar = self._get_navbar(accesspath)
+            module_name=self.module_name,
+            module_config=self.module_config,
+            user_config=self.get_user_config(),
+            userid=userid,
+            using_cookies=using_cookies,
+            navbar=self._get_navbar(accesspath)
         )
         data.update(extra_data)
+
+    def render_template(self, template_body, dict_data):
+        """
+            populate a bottle template
+            with a dictionary data
+            starting from template_body
+        """
+        TEMPLATE_PATH = [self.server_template_folder,
+                         self.module_template_folder]
+        template = bottle.SimpleTemplate(template_body, lookup=TEMPLATE_PATH)
+        data = dict_data.copy()
+        self._update_data(data)
         return template.render(**data)
 
     def check_user_in_groups(self, access_groups):
@@ -226,8 +251,6 @@ class AppModule(bottle.Bottle):
                     break
         return authenticated
 
-
-
     def get_beaker_session(self):
         """
             Build user http session
@@ -248,7 +271,7 @@ class AppModule(bottle.Bottle):
             config_filename = 'config_{}.json'.format(username)
             try:
                 userconfig = self.load_config(config_filename)
-            except Exception as ex:
+            except:
                 # ignore error
                 pass
         beaker_session['userconfig'] = userconfig
@@ -262,13 +285,15 @@ class AppModule(bottle.Bottle):
             Navigation bar for bootstrap menu
         """
         server_folder = self.server_config['DATAFOLDER']
-        menufile = os.path.join(server_folder, self.server_config.get('menufile'))
+        menufile = os.path.join(
+            server_folder, self.server_config.get('menufile'))
         login_url = self.server_config.get('login_url')
         logout_url = self.server_config.get('logout_url')
         brand_url = self.server_config.get('brand_url')
         brand_title = self.server_config.get('brand_title')
         bs = self.get_beaker_session()
-        navbar = make_bootstrap_navbar(accesspath, bs, menufile, login_url, logout_url, brand_url, brand_title)
+        navbar = make_bootstrap_navbar(
+            accesspath, bs, menufile, login_url, logout_url, brand_url, brand_title)
         return navbar
 
     def _err_http_server(self, error):
@@ -281,11 +306,13 @@ class AppModule(bottle.Bottle):
         traceback = error.traceback
         title = exception or 'Server Error'
         data = dict(title=title, body=body, traceback=traceback)
-        return self.render_template('error.tpl', data)
+        template_body = self._get_template('error.tpl')
+        return self.render_template(template_body, data)
 
     def err_msg(self, title, body):
         """
             Render an error message
         """
         data = dict(title=title, body=body)
-        return self.render_template('error.tpl', data)
+        template_body = self._get_template('error.tpl')
+        return self.render_template(template_body, data)
