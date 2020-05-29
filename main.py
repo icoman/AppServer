@@ -143,7 +143,6 @@ def session_setup():
 def load_modules():
     extensions_folder = os.path.join(
         server_folder, server_config.get('extensions_folder'))
-    sys.path.append(extensions_folder)
     for module_name in os.listdir(extensions_folder):
         fullpath = os.path.join(extensions_folder, module_name)
         if not module_name.startswith('_') and os.path.isdir(fullpath):

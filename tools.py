@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2017-2019 Ioan Coman
+Copyright (c) 2017-2020 Ioan Coman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -364,6 +364,7 @@ class myCherryPyServer(bottle.ServerAdapter):
 
 
 class myGeventWebSocketServer(bottle.ServerAdapter):
+    # Use this for websocket support
     def run(self, handler):
         from gevent import pywsgi
         from geventwebsocket.handler import WebSocketHandler
