@@ -6,7 +6,7 @@
 
 MIT License
 
-Copyright (c) 2019 Ioan Coman
+Copyright (c) 2020 Ioan Coman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -67,9 +67,8 @@ class MyAppModule(AppModule):
 app = MyAppModule()
 
 
-def update_app(module_name, server_config):
-    app.update(module_name, server_config)
-
+def getApp():
+    return app
 
 @app.route('/')
 @app.auth('access module')
@@ -85,14 +84,24 @@ def _():
     templates_folder = os.path.join(app.module_folder, 'templates')
     allmodules = []
     uptime = datetime.datetime.now() - app.start_time
-    for ext in os.listdir(extensions_folder):
-        if os.path.isdir(os.path.join(extensions_folder, ext)) and not ext.startswith('_'):
-            description_file = os.path.join(extensions_folder, ext, 'description.txt')
+    for module_name in os.listdir(extensions_folder):
+        if module_name.startswith('_'):
+            continue
+        module_folder = os.path.join(extensions_folder, module_name)
+        mapped = False
+        if os.path.isfile(module_folder) and module_folder.endswith('.pth'):
+            mapped = True
+            with open(module_folder, 'rt') as f:
+                module_folder = f.read().replace('\r','').replace('\n','')
+                module_name = module_name[:module_name.rfind('.')]
+
+        if os.path.isdir(module_folder):
+            description_file = os.path.join(module_folder, 'description.txt')
             description = ''
             if os.path.isfile(description_file):
                 with open(description_file, 'rt') as f:
                     description = f.read()
-            allmodules.append((ext, description))
+            allmodules.append((module_name, description, mapped))
     alltemplates = []
     for i in os.listdir(templates_folder):
         fullpath = os.path.join(templates_folder, i)
@@ -166,9 +175,15 @@ def _():
             server_folder = app.server_config['DATAFOLDER']
             extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
             custom_module_folder = os.path.join(extensions_folder, module_name)
-            filename = os.path.join(custom_module_folder, 'description.txt')
-            with open(filename, 'wt') as f:
-                f.write(module_description)
+            if not os.path.isdir(custom_module_folder):
+                pth = custom_module_folder+'.pth'
+                if os.path.isfile(pth):
+                    with open(pth, 'rt') as f:
+                        custom_module_folder = f.read().replace('\r','').replace('\n','')
+            if os.path.isdir(custom_module_folder):
+                filename = os.path.join(custom_module_folder, 'description.txt')
+                with open(filename, 'wt') as f:
+                    f.write(module_description)
         ret = dict(ok=True, data=None)
     except Exception as ex:
         ret = dict(ok=False, data=str(ex))
@@ -200,41 +215,47 @@ def _():
         server_folder = app.server_config['DATAFOLDER']
         extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
         custom_module_folder = os.path.join(extensions_folder, module_name)
-        config_file = os.path.join(custom_module_folder, configFile)
-        with open(config_file) as f:
-            data = json.loads(f.read())
-        for i in data.get('data').keys():
-            name = 'par{}'.format(i)
-            value = bottle.request.forms.getall(name) or ''
-            if data.get('data')[i]['type'] not in ('mc',):
-                if value and len(value) == 1:
-                    # because of getall
-                    value = value[0]
+        if not os.path.isdir(custom_module_folder):
+            pth = custom_module_folder+'.pth'
+            if os.path.isfile(pth):
+                with open(pth, 'rt') as f:
+                    custom_module_folder = f.read().replace('\r','').replace('\n','')
+        if os.path.isdir(custom_module_folder):
+            config_file = os.path.join(custom_module_folder, configFile)
+            with open(config_file) as f:
+                data = json.loads(f.read())
+            for i in data.get('data').keys():
+                name = 'par{}'.format(i)
+                value = bottle.request.forms.getall(name) or ''
+                if data.get('data')[i]['type'] not in ('mc',):
+                    if value and len(value) == 1:
+                        # because of getall
+                        value = value[0]
+                else:
+                    value = value or []
+                data.get('data')[i]['value'] = value
+            # delete oldest and rename old versions
+            VERSIONS = int(app.server_config.get('keep config baks') or 0)
+            if VERSIONS < 2:
+                # at least 2 versions (baks) must be used
+                VERSIONS = 2
+            for cnt in range(VERSIONS - 1, 0, -1):
+                oldfile = '{}.{}'.format(config_file, cnt)
+                newfile = '{}.{}'.format(config_file, cnt - 1)
+                if os.path.isfile(oldfile):
+                    os.remove(oldfile)
+                if os.path.isfile(newfile):
+                    os.rename(newfile, oldfile)
+            newfile = '{}.{}'.format(config_file, 0)
+            if os.path.isfile(config_file):
+                os.rename(config_file, newfile)
+            with open(config_file, 'wb') as f:
+                ret = json.dumps(data, sort_keys=True, indent=2, separators=(',', ': ')).encode('utf-8')
+                f.write(ret)
+            if Referer:
+                return html_redirect(Referer)
             else:
-                value = value or []
-            data.get('data')[i]['value'] = value
-        # delete oldest and rename old versions
-        VERSIONS = int(app.server_config.get('keep config baks') or 0)
-        if VERSIONS < 2:
-            # at least 2 versions (baks) must be used
-            VERSIONS = 2
-        for cnt in range(VERSIONS - 1, 0, -1):
-            oldfile = '{}.{}'.format(config_file, cnt)
-            newfile = '{}.{}'.format(config_file, cnt - 1)
-            if os.path.isfile(oldfile):
-                os.remove(oldfile)
-            if os.path.isfile(newfile):
-                os.rename(newfile, oldfile)
-        newfile = '{}.{}'.format(config_file, 0)
-        if os.path.isfile(config_file):
-            os.rename(config_file, newfile)
-        with open(config_file, 'wb') as f:
-            ret = json.dumps(data, sort_keys=True, indent=2, separators=(',', ': ')).encode('utf-8')
-            f.write(ret)
-        if Referer:
-            return html_redirect(Referer)
-        else:
-            return html_redirect('/{}'.format(module_name))
+                return html_redirect('/{}'.format(module_name))
 
 
 @app.post('/getcfg')
@@ -263,30 +284,36 @@ def _():
             server_folder = app.server_config['DATAFOLDER']
             extensions_folder = os.path.join(server_folder, app.server_config.get('extensions_folder', 'extensions'))
             custom_module_folder = os.path.join(extensions_folder, module_name)
-            config_file = os.path.join(custom_module_folder, configFile)
-            if not os.path.exists(config_file):
-                src_config_file = os.path.join(custom_module_folder, 'config_default_.json')
-                if not os.path.exists(src_config_file):
-                    return dict(ok=False, data='No default config file.')
-                copyfile(src_config_file, config_file)
+            if not os.path.isdir(custom_module_folder):
+                pth = custom_module_folder+'.pth'
+                if os.path.isfile(pth):
+                    with open(pth, 'rt') as f:
+                        custom_module_folder = f.read().replace('\r','').replace('\n','')
+            if os.path.isdir(custom_module_folder):
                 config_file = os.path.join(custom_module_folder, configFile)
-            with open(config_file) as f:
-                data = json.loads(f.read())
-            # some groups data format fix
-            for i in data.get('data').keys():
-                if data.get('data')[i]['type'] in ('mc',):
-                    # mc = multiple checks = a list read by ajax post
-                    try:
-                        _e = eval(str(data.get('data')[i]['value']) or "[]")
-                        if type(_e) is not type([]):
-                            _e = [_e]
-                        _v = [int(x) for x in _e]
-                    except:
-                        _v = []
-                    data.get('data')[i]['value'] = _v
-            ret = dict(ok=True, data=data)
-        else:
-            ret = dict(ok=False, data='No module name')
+                if not os.path.exists(config_file):
+                    src_config_file = os.path.join(custom_module_folder, 'config_default_.json')
+                    if not os.path.exists(src_config_file):
+                        return dict(ok=False, data='No default config file.')
+                    copyfile(src_config_file, config_file)
+                    config_file = os.path.join(custom_module_folder, configFile)
+                with open(config_file) as f:
+                    data = json.loads(f.read())
+                # some groups data format fix
+                for i in data.get('data').keys():
+                    if data.get('data')[i]['type'] in ('mc',):
+                        # mc = multiple checks = a list read by ajax post
+                        try:
+                            _e = eval(str(data.get('data')[i]['value']) or "[]")
+                            if type(_e) is not type([]):
+                                _e = [_e]
+                            _v = [int(x) for x in _e]
+                        except:
+                            _v = []
+                        data.get('data')[i]['value'] = _v
+                ret = dict(ok=True, data=data)
+            else:
+                ret = dict(ok=False, data='No module name')
     except Exception as ex:
         ret = dict(ok=False, data=str(ex))
     return ret

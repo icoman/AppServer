@@ -73,7 +73,7 @@ function addmodule(){
 			post_request('/{{module_name}}/addmod', {tmpl:v,newmodulename:new_module_name}, func_reload);
 		}
 	}); 
-	show_input_dlg('Add new module?', 'Name', 'new module');
+	show_input_dlg('Add new module?', 'Module Name', '');
 }
 
 
@@ -116,12 +116,13 @@ function reboot_server(){
 
 <table class="table table-nonfluid table-hover">
 <thead>
-<tr><th>Module Name</th><th>Config</th><th>Link</th><th>Module Description</th></tr>
+<tr><th>Module Name</th><th>Mapped</th><th>Config</th><th>Link</th><th>Module Description</th></tr>
 </thead>
 <tbody>
 %for m in allmodules:
 <tr>
 <td>{{m[0]}}</td>
+<td>{{'yes' if m[2] else ''}}</td>
 <td>
 	<button type="button" class="btn btn-primary btn-xs" 
 		onclick="edit_user_config('{{m[0]}}')"

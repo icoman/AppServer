@@ -25,8 +25,8 @@ class MyAppModule(AppModule):
 app = MyAppModule()
 
 
-def update_app(module_name, server_config):
-    app.update(module_name, server_config)
+def getApp():
+    return app
 
 
 @app.route('/')

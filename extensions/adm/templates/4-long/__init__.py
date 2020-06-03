@@ -25,8 +25,8 @@ class MyAppModule(AppModule):
 app = MyAppModule()
 
 
-def update_app(module_name, server_config):
-    app.update(module_name, server_config)
+def getApp():
+    return app
 
 
 @app.route('/')
@@ -40,13 +40,15 @@ def _():
     userid = bs.get('userid') or 0
     userconfig = bs.get('userconfig') or {}
     data = dict(title=title)
-    rendered_template = app.render_template('index.tpl', data)
+    template_body = app._get_template('index.tpl')
+    rendered_template = app.render_template(template_body, data)
     yield rendered_template
     time.sleep(1)
     N = int(userconfig.get('steps') or 1)
     for i in range(N):
         now = datetime.datetime.now().strftime(app.datetimeformat)
         msg = '{} - Test {}'.format(now, i)
+        print(msg)
         yield '<script>info("{}");</script>'.format(msg)
         time.sleep(1)
     msg = 'End.'

@@ -6,7 +6,7 @@
 
 MIT License
 
-Copyright (c) 2019 Ioan Coman
+Copyright (c) 2020 Ioan Coman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -74,8 +74,8 @@ class MyAppModule(AppModule):
 app = MyAppModule()
 
 
-def update_app(module_name, server_config):
-    app.update(module_name, server_config)
+def getApp():
+    return app
 
 
 #

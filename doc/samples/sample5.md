@@ -15,8 +15,8 @@ from appmodule import AppModule
 
 app = AppModule()
 
-def update_app(module_name, server_config):
-    app.update(module_name, server_config)
+def getApp():
+    return app
 
 @app.route("/")
 @app.view("index.tpl")
