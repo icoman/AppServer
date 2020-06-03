@@ -56,10 +56,11 @@ extensions_folder = os.path.join(
     server_folder, server_config.get('extensions_folder'))
 sessions_folder = os.path.join(
     server_folder, server_config.get('sessions_folder'))
-sys.path.append(extensions_folder)
+#sys.path.append(extensions_folder)
+sys.path.insert(1, extensions_folder)
 
 root = AppModule()
-root.update(None, server_config)
+root.update(None, server_config, None)
 
 
 @root.route('/')
@@ -144,18 +145,35 @@ def load_modules():
     extensions_folder = os.path.join(
         server_folder, server_config.get('extensions_folder'))
     for module_name in os.listdir(extensions_folder):
-        fullpath = os.path.join(extensions_folder, module_name)
-        if not module_name.startswith('_') and os.path.isdir(fullpath):
+        if module_name.startswith('_'):
+            continue
+        module_name_real = module_name
+        module_name_alias = module_name
+        module_folder = os.path.join(extensions_folder, module_name)
+        if os.path.isfile(module_folder) and module_folder.endswith('.pth'):
+            with open(module_folder, 'rt') as f:
+                module_folder = f.read().replace('\r','').replace('\n','')
+                parent = module_folder[:module_folder.rfind(os.path.sep)]
+                module_name_real = module_folder[module_folder.rfind(os.path.sep)+1:]
+                sys.path.insert(1, parent)
+                module_name_alias = module_name[:module_name.rfind('.')]
+        if os.path.isdir(module_folder):
             try:
                 t1 = time.time()
-                prefix = '/{}'.format(module_name)
-                module = importlib.import_module(module_name)
-                module.update_app(module_name, server_config)
+                prefix = '/{}'.format(module_name_alias)
+                module = importlib.import_module(module_name_real, module_name_alias)
+                try:
+                    app = module.getApp()
+                except:
+                    app = module.app
+                    if DEBUG:
+                        print('Warning {}: getApp() missing'.format(prefix))
+                app.update(module_name_alias, server_config, module_folder)
                 root.mount(prefix, module.app)
                 t2 = time.time()
                 if DEBUG:
                     print('\tLoading "{}" in {:.2f} sec'.format(
-                        module_name, t2-t1))
+                        module_name_alias, t2-t1))
             except Exception as ex:
                 traceback.print_exc(file=sys.stdout)
 

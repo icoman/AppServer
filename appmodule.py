@@ -45,7 +45,7 @@ class AppModule(bottle.Bottle):
         self._tpl_map_lock = threading.Lock()
         self._templates_map = {}
 
-    def update(self, module_name, server_config):
+    def update(self, module_name, server_config, module_folder):
         """
             updates from main before bottle server starts
             when code parse extensions folder
@@ -60,9 +60,12 @@ class AppModule(bottle.Bottle):
         template_folder = server_config.get('template_folder')
         if module_name:
             self.module_name = module_name
-            extensions_folder = os.path.join(
-                server_folder, server_config.get('extensions_folder'))
-            self.module_folder = os.path.join(extensions_folder, module_name)
+            if module_folder:
+                self.module_folder = module_folder
+            else:
+                extensions_folder = os.path.join(
+                    server_folder, server_config.get('extensions_folder'))
+                self.module_folder = os.path.join(extensions_folder, module_name)
         else:
             self.module_name = ''
             self.module_folder = server_folder
