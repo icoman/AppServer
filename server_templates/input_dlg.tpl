@@ -25,16 +25,18 @@
 <script>
 $('#inputdlg').on('shown.bs.modal', function () {
     $('#input_value').focus();
+    //setTimeout(()=>{ 
+    //    $('#input_value').focus(); 
+    //}, 500);
 });
 
 //prevent form submit when Enter key is pressed
 //but not when inside textarea
 $(document).keypress(
   function(event){
-    if (event.which == '13') && event.target.type != 'textarea')
+    if (event.which == '13' && event.target.type != 'textarea')
       event.preventDefault();
-    }
-});
+    });
 
 function show_input_dlg(title, name, value){
 	$('.tooltip').hide();
