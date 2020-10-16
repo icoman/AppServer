@@ -8,8 +8,8 @@
       </div>
 	  <div class="modal-body">
     <div class="form-group">
-        <label id="input_name" class="control-label col-xs-2">Name:</label>
-		<div class="col-xs-10">
+        <label id="input_name" class="control-label col-xs-3">Name:</label>
+		<div class="col-xs-9">
         <input type="text" class="form-control" id="input_value" name="name" value="" placeholder="name">
 		</div>
 	</div>
@@ -28,9 +28,10 @@ $('#inputdlg').on('shown.bs.modal', function () {
 });
 
 //prevent form submit when Enter key is pressed
+//but not when inside textarea
 $(document).keypress(
   function(event){
-    if (event.which == '13') {
+    if (event.which == '13') && event.target.type != 'textarea')
       event.preventDefault();
     }
 });

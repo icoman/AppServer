@@ -79,7 +79,7 @@ def _(path):
 
 
 # for free ssl - https://zerossl.com/free-ssl/
-@root.route('/.well-known/acme-challenge/<path:path>')
+@root.route('/.well-known/pki-validation/<path:path>')
 def _(path):
     return bottle.static_file(path, root=server_config.get('free_ssl_folder'))
 
@@ -90,7 +90,20 @@ def callback():
     expires = int(server_config.get('cookie_life') or 3)
     bottle.response.set_cookie(server_config.get('cookielaw_name'), 'yes',
                                expires=datetime.datetime.now() + datetime.timedelta(days=expires), path="/")
-    return html_redirect(bottle.request.environ.get('HTTP_REFERER', '/'))
+
+    d = bottle.request.query
+    q = '&'.join(['{}={}'.format(x,d[x]) for x in d.keys()])
+
+    referer = bottle.request.environ.get('HTTP_REFERER', '/')
+    urlback = bottle.request.query.back or referer
+    if urlback.find('?') == -1:
+        urlback = urlback + '?cookie=y'
+    else:
+        urlback = urlback + '&cookie=y'
+    if q:
+        urlback = urlback + '&' + q
+
+    return html_redirect(urlback)
 
 
 def session_setup():

@@ -539,11 +539,22 @@ def _():
 @app.auth('ANY')
 def _():
     """
-        Login with token
+        Login with token and autoconfirm cookie
     """
     code = bottle.request.query.code
-    # format = bottle.request.query.format
-    # type = bottle.request.query.type
+    go = bottle.request.query.go
+    cookie = bottle.request.query.cookie
+    cookielaw_name = app.server_config.get('cookielaw_name')
+    using_cookies = bottle.request.get_cookie(cookielaw_name)
+    if not using_cookies:
+        # redirect
+        d = bottle.request.query
+        q = '&'.join(['{}={}'.format(x,d[x]) for x in d.keys()])
+        url = '/confirmcookie?back=/{}/users/qrscan&{}'.format(app.module_name, q)
+        return html_redirect(url)
+    if not cookie and not using_cookies:
+        # cookie not accepted
+        return "Cookies not accepted by browser."
     bs = app.get_beaker_session()
     token = code.split('=')[-1]
     with MyS() as session:
@@ -563,7 +574,10 @@ def _():
             bs['authenticated'] = True
             # something random
             bs[getRndString(12)] = getRndString(32)
-            return html_redirect('/')
+            if go:
+                return html_redirect(go)
+            else:
+                return html_redirect('/')
         else:
             # return 'No access! Invalid or expired token.'
             return html_redirect('/auth/login')
