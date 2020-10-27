@@ -74,6 +74,7 @@ class Users(Base):
     created = Column(DateTime, default=datetime.datetime.now)
     changed = Column(DateTime, default=datetime.datetime.now)
     token = Column(String(128)) #auth token qrcode
+    home = Column(Unicode(64))
     #groups is a list of sqlalchemy objects
     groups = relationship("Groups", secondary=association_table, back_populates="users")
     def __init__(self, name, password, groups=[]):

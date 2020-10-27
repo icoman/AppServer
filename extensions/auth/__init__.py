@@ -577,7 +577,7 @@ def _():
             if go:
                 return html_redirect(go)
             else:
-                return html_redirect('/')
+                return html_redirect(obuser.home or '/')
         else:
             # return 'No access! Invalid or expired token.'
             return html_redirect('/auth/login')
