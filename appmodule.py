@@ -181,7 +181,7 @@ class AppModule(bottle.Bottle):
                     filename = filename1
                 else:
                     filename = filename2
-                with open(filename, 'rt') as f:
+                with open(filename, 'rb') as f:
                     body = f.read()
                 if not self.server_config.get('DEBUG'):
                     with self._tpl_map_lock:
@@ -243,7 +243,7 @@ class AppModule(bottle.Bottle):
         authenticated = False
         if userid and (-1 in access_groups) or (1 in user_groups):
             # user is logged in
-            # and -1 is in access_groups (anonymous access)
+            # and -1 is in access_groups (all users access)
             # or 1 is in user_groups (user is in built in admin group)
             authenticated = True
         else:

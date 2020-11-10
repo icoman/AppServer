@@ -147,9 +147,9 @@ def _make_login_logout(user, icon, loginurl, logouturl):
 
 def make_bootstrap_navbar(url, bs, menufile, loginurl, logouturl, brandurl, brandtitle):
     if py3k:
-        userfullname = bs.get('userfullname') or ''
+        userfullname = bs.get('userfullname') or bs.get('username')
     else:
-        userfullname = (bs.get('userfullname') or u'').encode('utf8')
+        userfullname = (bs.get('userfullname') or bs.get('username')).encode('utf8')
     user_groups = bs.get('groups') or [0]
     navcode = ''
     L = []
