@@ -265,7 +265,11 @@ class AppModule(bottle.Bottle):
         else:
             # no cookies = no session
             beaker_session = {}
+        return beaker_session
+
+    def get_user_config(self):
         # Build user config on each access
+        beaker_session = self.get_beaker_session()
         userconfig = {}
         userid = beaker_session.get('userid') or 0
         # if logged in and module config enable access to user config
@@ -277,11 +281,9 @@ class AppModule(bottle.Bottle):
             except:
                 # ignore error
                 pass
-        beaker_session['userconfig'] = userconfig
-        return beaker_session
+        return userconfig
 
-    def get_user_config(self):
-        return self.get_beaker_session().get('userconfig', {})
+
 
     def _get_navbar(self, accesspath):
         """
