@@ -76,3 +76,88 @@ changed from server web interface or using an [external application](https://git
  * Server supports SSL and FCGI.
 
  * Server can run frozen (frozen Python mode).
+
+## May 19, 2026 update: a sample of Python beauty, simplicity and power
+
+In 2026, after 7 years since I created this project, I still use it for two business partners.
+
+Here is another code snippet:
+
+### The server side python code
+
+```python
+
+from .modeldb import ArhivaCRQS
+
+@app.route('/crqs')
+@app.auth('access module')
+@app.view('crqs.tpl')
+def _():
+    title = 'CRQS Archive'
+    source_data_map = {
+        100: ('id', ''),
+        110: ('created', 'Data ora'),
+        120: ('operator', 'Op mon'),
+        130: ('operator_crqs', 'Op Q'),
+        140: ('order', 'Ordin de productie'),
+        150: ('box_number', 'box_number'),
+        160: ('ean_cu', 'EAN CU'),
+        170: ('mrdr_du', 'MRDR DU'),
+        180: ('mix_batch_sscc', 'mix_batch_sscc'),
+        190: ('lot', 'LOT'),
+        200: ('palet_number', 'palet_number'),
+        210: ('mixer_number', 'mixer_number'),
+        220: ('category', 'category'),
+    }
+    body = []
+
+    with MyS(1) as session:
+        for rec in session.query(ArhivaCRQS).all():
+            d = []
+            for key in sorted(source_data_map.keys()):
+                sql_field = source_data_map[key][0]
+                value = getattr(rec, sql_field)
+                if isinstance(value, datetime.datetime):
+                    value = value.strftime(app.datetimeformat2)
+                d.append(value)
+            body.append(d)
+    head = [source_data_map[x][1] for x in sorted(source_data_map.keys())]
+
+    return dict( title = title, head = head, body = body )
+
+
+```
+
+### The client side (file **crqs.tpl** as bottle template)
+
+```html
+% include('header.tpl', local_js=[], local_css=['app.css', '/com/static/animations.css'])
+
+<table class="table table-striped table-hover table-condensed">
+  <thead>
+    <tr>
+    %for x in head:
+    %if x:
+       <th>{{x}}</th>
+    %end
+    %end
+    </tr>
+  </thead>
+  <tbody>
+    %for x in body:
+    <tr>
+        %for index, rec in enumerate(x):
+        %if head[index]:
+            <td>{{rec}}</td>
+        %end
+        %end
+    </tr>
+    %end
+  </tbody>
+</table>
+
+% include('footer.tpl')
+```
+
+
+
