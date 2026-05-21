@@ -160,4 +160,98 @@ def _():
 ```
 
 
+### Another and better server side python code
 
+```python
+@app.route('/crqs')
+@app.auth('access module')
+@app.view('crqs.tpl')
+def _():
+
+    bs = app.get_beaker_session()
+    userid = int(bs.get('userid', 0))
+    userfullname = bs.get('userfullname', 'Anonymous')
+
+    now = datetime.datetime.now()
+    title = 'Arhiva CRQS'
+    nume_operator = userfullname
+    filtru_lot = bottle.request.query.lot or ''
+    filtru_mrdr = bottle.request.query.mrdr or ''
+
+    source_data = [
+        # ('sql_field', 'Header title'),
+        ('id', ''), # hidden
+        ('', ''), # record is valid
+        ('rec_type', ''),  # hidden
+        ('created', 'Data creare'),
+        ('updated', 'Data actualizare'),
+        # ('manufactured', 'Data productie'),
+        ('operator', 'Operator mon'),
+        ('order', 'Ordin'),
+        ('operator_crqs', 'Operator CRQS'),
+        ('lot', 'LOT'),
+        ('ean_cu', 'EAN CU'),
+        ('mrdr_du', 'MRDR DU'),
+        ('box_number', 'Nr cutie'),
+        ('mix_batch_sscc', 'Nr mixare'),
+        ('palet_number', 'Nr palet'),
+        ('mixer_number', 'Mixer'),
+        ('category', 'Categorie'),
+        ('', 'Denumire produs')
+    ]
+
+    # table head data passed to bottle template
+    head = [description for _, description in source_data]
+
+    # table body data passed to bottle template
+    body = []
+    with MyS(3) as session:
+        d_produse = {x.MrdrDU:x.DenumireLada or x.DenumirePalet for x in session.query(ProduseFD).all()}
+    with MyS(1) as session:
+        q = session.query(ArhivaCRQS)
+        if filtru_lot:
+            q = q.filter(ArhivaCRQS.lot.ilike(f'%{filtru_lot}%'))
+        if filtru_mrdr:
+            q = q.filter(ArhivaCRQS.mrdr_du.ilike(f'%{filtru_mrdr}%'))
+        for rec in q.all():
+            d = []
+            for sql_field, description in source_data:
+                if sql_field:
+                    value = getattr(rec, sql_field)
+                    if isinstance(value, datetime.datetime):
+                        value = value.strftime(app.datetimeformat2)
+                else:
+                    if description:
+                        # insert denumire produs
+                        value = d_produse.get(rec.mrdr_du)
+                    else:
+                        # compute color of table row
+                        valid = False
+                        if rec.rec_type == 1:
+                            # Ambalare
+                            if rec.box_number and rec.palet_number:
+                                valid = True
+                        if rec.rec_type == 2:
+                            # Mixare
+                            if rec.box_number and rec.mix_batch_sscc and rec.mixer_number and rec.palet_number and rec.category:
+                                valid = True
+                        if valid:
+                            # find how old is the record
+                            vechime_in_minute = (now - rec.updated).total_seconds() / 60.0
+                            if vechime_in_minute > LIMIT_CRQS_REMOVE_MINUTES:
+                                value = 'success'
+                            else:
+                                value = 'default'
+                        else:
+                            value = 'danger'
+                d.append(value)
+            body.append(d)
+
+    return dict(title = title, 
+        head = head, body = body,
+        nume_operator = nume_operator,
+        filtru_lot = filtru_lot, 
+        filtru_mrdr = filtru_mrdr
+        )
+
+```
