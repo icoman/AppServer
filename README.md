@@ -181,7 +181,7 @@ def _():
     source_data = [
         # ('sql_field', 'Header title'),
         ('id', ''), # hidden
-        ('', ''), # record is valid
+        ('', ''), # color of table row
         ('rec_type', ''),  # hidden
         ('created', 'Data creare'),
         ('updated', 'Data actualizare'),
